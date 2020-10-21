@@ -1,0 +1,44 @@
+---
+title: "Final Project Initial Analysis"
+author: "Scott Burstein"
+date: "10/21/2020"
+###"Data Science and Society (Sociology 367) - Final Project"
+output: html_document
+---
+
+#Configure RStudio Rmd file output format
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load the libraries and datasets:
+Kaggle Natural Disaster Dataset: https://www.kaggle.com/headsortails/us-natural-disaster-declarations
+```{r message=FALSE}
+library(tidyverse)
+
+FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
+view(FEMA_Declarations)
+M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
+view(M5_Subset)
+```
+<br/><br/>
+
+```{r FL_Hurricanes}
+FL_Hurricanes <- FEMA_Declarations %>% 
+  filter(incident_type == "Hurricane", incident_begin_date >= 2015, state == "FL") %>% 
+  select(declaration_title) %>% 
+  distinct()
+  
+FL_Hurricanes  
+#sub(".*? ", "", FEMA_Declarations$declaration_title)
+```
+```{r CA_Fires}
+CA_Fires <- FEMA_Declarations %>% 
+  filter(incident_type == "Fire", incident_begin_date >= 2015, state == "CA") %>% 
+  select(declaration_title) %>% 
+  distinct()
+  
+CA_Fires  
+```
+
