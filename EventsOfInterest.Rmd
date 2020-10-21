@@ -13,10 +13,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #Load the libraries and datasets:
+
 Kaggle Natural Disaster Dataset: https://www.kaggle.com/headsortails/us-natural-disaster-declarations
+
+gtrendsR Package: https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+
 ```{r message=FALSE}
 library(tidyverse)
-
+#install.packages("gtrendsR")
+library(gtrendsR)
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 view(FEMA_Declarations)
 M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
@@ -41,4 +46,8 @@ CA_Fires <- FEMA_Declarations %>%
   
 CA_Fires  
 ```
-
+"""
+does intensity impact how much people search for it OR how does proximity to event impact search patterns...2 days or months after....
+correlate each event to number of searches / intensity to search....
+does proximity to event impact climate change search volume?
+"""
