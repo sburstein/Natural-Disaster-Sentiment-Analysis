@@ -51,3 +51,72 @@ does intensity impact how much people search for it OR how does proximity to eve
 correlate each event to number of searches / intensity to search....
 does proximity to event impact climate change search volume?
 """
+
+```{r Google_Trends_Ex}
+weather_data<-gtrends("weather")
+weather_data
+```
+```{r gtrends_function}
+
+weather_data<-gtrends("weather")
+
+list_of_weather_events<-c("camp fire","hurricane")
+
+finaldata<-as.data.frame(NULL)
+for (i in 1:length(list_of_weather_events)){
+  cf_tweets<-gtrends(keyword = list_of_weather_events[i],
+                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event.Use Lubridate
+  state_tweets<-as.data.frame(cf_tweets[3])
+  finaldata<-rbind(finaldata, state_tweets)
+  print(i)
+  Sys.sleep(5)
+}
+
+
+
+cf_tweets<-gtrends(keyword = "climate change",
+                   geo = "Florida"
+                   ) 
+
+
+cf_tweets<-gtrends(keyword = "camp fire",
+        geo = "FL") 
+
+cf_tweets[6]
+
+```
+
+
+
+```{r}
+search_terms <- c(
+"Hurricane Michael",		
+"Hurricane Dorian",		
+"Hurricane Isaias",		
+"Hurricane Sally"
+)
+
+output_results <- gtrends(keyword = search_terms,
+        geo = "US",
+        time = "today 12-m") %>% 
+        summary()
+
+FL_hurr_interest <- output_results %>% 
+          .$interest_over_time %>% #not working
+          glimpse()
+
+output_results[[1]][1].$interest_over_time
+```
+
+
+```{r viz}
+FL_hurr_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "darkblue", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist() -> plot2
+```
+
