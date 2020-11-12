@@ -19,9 +19,16 @@ Kaggle Natural Disaster Dataset: https://www.kaggle.com/headsortails/us-natural-
 gtrendsR Package: https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
 ```{r message=FALSE}
+
+#---PACKAGES------  > remove "#" if package not previously installed
+#install.packages("tidyverse")
 library(tidyverse)
 #install.packages("gtrendsR")
 library(gtrendsR)
+install.packages("ggthemes")
+library(ggthemes)
+
+#---DATA---------
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 view(FEMA_Declarations)
 M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
@@ -54,35 +61,32 @@ does proximity to event impact climate change search volume?
 
 ```{r Google_Trends_Ex}
 weather_data<-gtrends("weather")
-weather_data
 ```
-```{r gtrends_function}
 
-weather_data<-gtrends("weather")
+```{r gtrends_function}
 
 list_of_weather_events<-c("camp fire","hurricane")
 
 finaldata<-as.data.frame(NULL)
 for (i in 1:length(list_of_weather_events)){
-  cf_tweets<-gtrends(keyword = list_of_weather_events[i],
+  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
                      geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event.Use Lubridate
-  state_tweets<-as.data.frame(cf_tweets[3])
-  finaldata<-rbind(finaldata, state_tweets)
+  all_states_interest <- as.data.frame(weather_event_gtrends[3])
+  finaldata <- rbind(finaldata, all_states_interest)
   print(i)
   Sys.sleep(5)
 }
+finaldata
 
 
-
-cf_tweets<-gtrends(keyword = "climate change",
-                   geo = "Florida"
+climate_change_trend <- gtrends(keyword = "climate change",
+                   geo = "US"
                    ) 
+climate_change_trend[1]$interest_over_time
 
 
-cf_tweets<-gtrends(keyword = "camp fire",
-        geo = "FL") 
 
-cf_tweets[6]
+
 
 ```
 
@@ -98,25 +102,62 @@ search_terms <- c(
 
 output_results <- gtrends(keyword = search_terms,
         geo = "US",
-        time = "today 12-m") %>% 
-        summary()
+        time = "today 12-m") 
+#%>% summary()
+
 
 FL_hurr_interest <- output_results %>% 
           .$interest_over_time %>% #not working
           glimpse()
 
-output_results[[1]][1].$interest_over_time
+output_results[1]$interest_over_time
+
 ```
 
 
-```{r viz}
-FL_hurr_interest %>% 
+```{r FL_hurricane viz}
+
+ FL_hurr_plot <- FL_hurr_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
   # Begin ggplot
   ggplot(aes(x = date, y = hits)) +
   geom_line(colour = "darkblue", size = 1.5) +
   facet_wrap(~keyword) +
-  ggthemes::theme_economist() -> plot2
+  ggthemes::theme_economist()
+FL_hurr_plot
+```
+
+```{r}
+CA__top4_fires <- c(
+"Mendocino Complex",		
+"August Fire",		
+"Creek Fire",		
+"North Complex"
+)
+
+CA_fire_trends <- gtrends(keyword = CA__top4_fires,
+        geo = "US",
+        time = "today 12-m") 
+#%>% summary()
+
+
+CA_fire_interest <- CA_fire_trends %>% 
+          .$interest_over_time %>%
+          glimpse()
+
+CA_fire_interest[1]$interest_over_time
+```
+
+```{r CA_fire viz}
+ CA_fire_plot <- CA_fire_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "darkblue", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+CA_fire_plot
 ```
 
