@@ -80,17 +80,46 @@ finaldata
 
 
 climate_change_trend <- gtrends(keyword = "climate change",
-                   geo = "US"
+                   geo = "US" #change location
                    ) 
 climate_change_trend[1]$interest_over_time
 
-
-
-
-
 ```
 
+```{r US_climate_change viz}
 
+climate_search_terms <- c(
+"climate change",		
+"global warming",		
+"fossil fuel",		
+"green new deal"
+)
+
+climate_change_gtrends <- gtrends(keyword = climate_search_terms,
+        geo = "US", #change to state?
+        time = "today 12-m") 
+#%>% summary()
+
+climate_change_gtrends[1]$interest_over_time
+
+
+US_climate_interest <- climate_change_gtrends %>% 
+          .$interest_over_time %>% #not working
+          glimpse()
+
+
+ climate_change_plot <- US_climate_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  #geom_vline(xintercept = 1.59e+09) + #determine key dates in correct format
+  geom_line(colour = "darkblue", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+ #+ annotate()
+climate_change_plot
+```
 
 ```{r}
 search_terms <- c(
@@ -101,16 +130,16 @@ search_terms <- c(
 )
 
 output_results <- gtrends(keyword = search_terms,
-        geo = "US",
+        geo = "US", #change to FL
         time = "today 12-m") 
 #%>% summary()
+
+output_results[1]$interest_over_time
 
 
 FL_hurr_interest <- output_results %>% 
           .$interest_over_time %>% #not working
           glimpse()
-
-output_results[1]$interest_over_time
 
 ```
 
@@ -155,7 +184,7 @@ CA_fire_interest[1]$interest_over_time
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
   # Begin ggplot
   ggplot(aes(x = date, y = hits)) +
-  geom_line(colour = "darkblue", size = 1.5) +
+  geom_line(colour = "dark red", size = 1.5) +
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
 CA_fire_plot
