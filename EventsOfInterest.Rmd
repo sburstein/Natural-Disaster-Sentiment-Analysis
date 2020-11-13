@@ -120,6 +120,7 @@ US_climate_interest <- climate_change_gtrends %>%
  #+ annotate()
 climate_change_plot
 ```
+Resource Cited: https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
 
 ```{r}
 search_terms <- c(
@@ -188,5 +189,11 @@ CA_fire_interest[1]$interest_over_time
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
 CA_fire_plot
+```
+
+```{r}
+state_date_FEMA_decs <- FEMA_Declarations %>% 
+  group_by(state, date) %>% 
+  count(disaster_number)
 ```
 
