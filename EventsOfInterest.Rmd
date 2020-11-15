@@ -191,9 +191,59 @@ CA_fire_interest[1]$interest_over_time
 CA_fire_plot
 ```
 
-```{r}
+```{r state_date declaration count}
+
+FEMA_Declarations <- FEMA_Declarations %>% 
+  mutate(declaration_day = gsub( " .*$", "", declaration_date ))
+
 state_date_FEMA_decs <- FEMA_Declarations %>% 
-  group_by(state, date) %>% 
-  count(disaster_number)
+  group_by(state, declaration_day) %>% 
+  count()
+state_date_FEMA_decs
+```
+```{r state declarations count since date}
+
+date_since <- 2000-01-01 # January 1st, 2000
+
+state_FEMA_decs_total <- state_date_FEMA_decs %>%
+  filter(declaration_day >= date_since) %>% 
+  group_by(state) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+state_FEMA_decs_total
+```
+Since January 1st, 2000, the following 10 states have had the most FEMA 
+natural disaster emergency declarations called:
+
+CA, TX, OK, WA, FL, OR, NM, NV, AZ, CO
+
+
+### Data set for climate change Google searches by day:
+
+```{r}
+search_terms <- c(
+"climate change"
+)
+
+#state_list()
+#for (state: state_list)
+
+climate_trends <- gtrends(keyword = search_terms,
+        geo = "US", #change to FL
+        time = "today 12-m")
+
+location_df <- data.frame(climate_trends[["interest_by_region"]][["location"]])
+location_df
+hits_df <- data.frame(climate_trends[["interest_by_region"]][["hits"]])
+hits_df
+
+climate_location_hits_table <- left_join(location_df, hits_df, by = character())
+#climate_location_hits_table <- climate_location_hits_table
+
+names(climate_location_hits_table)[1] <- "location"
+names(climate_location_hits_table)[2] <- "hits"
+
+climate_location_hits_table
 ```
 
