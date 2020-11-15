@@ -226,24 +226,24 @@ search_terms <- c(
 "climate change"
 )
 
-#state_list()
-#for (state: state_list)
-
 climate_trends <- gtrends(keyword = search_terms,
         geo = "US", #change to FL
         time = "today 12-m")
 
 location_df <- data.frame(climate_trends[["interest_by_region"]][["location"]])
-location_df
 hits_df <- data.frame(climate_trends[["interest_by_region"]][["hits"]])
-hits_df
 
-climate_location_hits_table <- left_join(location_df, hits_df, by = character())
-#climate_location_hits_table <- climate_location_hits_table
+names(location_df) <- "location"
+names(hits_df) <- "hits"
+
+climate_location_hits_table <- cbind(location_df$location, hits_df$hits)
+
+climate_location_hits_table <- data.frame(climate_location_hits_table)
 
 names(climate_location_hits_table)[1] <- "location"
 names(climate_location_hits_table)[2] <- "hits"
 
 climate_location_hits_table
+
 ```
 
