@@ -6,17 +6,21 @@ date: "10/21/2020"
 output: html_document
 ---
 
-#Configure RStudio Rmd file output format
+# Setup
+
+## Configure RStudio Rmd File Output Format
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Load the libraries and datasets:
+## Load the Libraries and Datasets
 
-Kaggle Natural Disaster Dataset: https://www.kaggle.com/headsortails/us-natural-disaster-declarations
+Kaggle Natural Disaster Dataset: 
+https://www.kaggle.com/headsortails/us-natural-disaster-declarations
 
-gtrendsR Package: https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+gtrendsR Package: 
+https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
 ```{r message=FALSE}
 
@@ -25,8 +29,10 @@ gtrendsR Package: https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 library(tidyverse)
 #install.packages("gtrendsR")
 library(gtrendsR)
-install.packages("ggthemes")
+#install.packages("ggthemes")
 library(ggthemes)
+#install.packages("maps")
+library(maps)
 
 #---DATA---------
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
@@ -36,32 +42,40 @@ view(M5_Subset)
 ```
 <br/><br/>
 
+# Filter for Event Types
+
+### Generalizable Parameters for Event Filter
+
+```{r params}
+# Start year to filter events (only show FEMA decs. since specified year)
+init_year <- 2015
+```
+
+
+## Florida Hurricanes since `init_year`
+
 ```{r FL_Hurricanes}
 FL_Hurricanes <- FEMA_Declarations %>% 
-  filter(incident_type == "Hurricane", incident_begin_date >= 2015, state == "FL") %>% 
+  filter(incident_type == "Hurricane", incident_begin_date >= init_year, state == "FL") %>% 
   select(declaration_title) %>% 
   distinct()
   
 FL_Hurricanes  
 #sub(".*? ", "", FEMA_Declarations$declaration_title)
 ```
+## California Wildfires since `init_year`
+
 ```{r CA_Fires}
 CA_Fires <- FEMA_Declarations %>% 
-  filter(incident_type == "Fire", incident_begin_date >= 2015, state == "CA") %>% 
+  filter(incident_type == "Fire", incident_begin_date >= init_year, state == "CA") %>% 
   select(declaration_title) %>% 
   distinct()
   
 CA_Fires  
 ```
-"""
-does intensity impact how much people search for it OR how does proximity to event impact search patterns...2 days or months after....
-correlate each event to number of searches / intensity to search....
-does proximity to event impact climate change search volume?
-"""
+# Research Questions
 
-```{r Google_Trends_Ex}
-weather_data<-gtrends("weather")
-```
+
 
 ```{r gtrends_function}
 
@@ -76,14 +90,15 @@ for (i in 1:length(list_of_weather_events)){
   print(i)
   Sys.sleep(5)
 }
+
 finaldata
 
 
 climate_change_trend <- gtrends(keyword = "climate change",
                    geo = "US" #change location
                    ) 
-climate_change_trend[1]$interest_over_time
 
+#climate_change_trend[1]$interest_over_time
 ```
 
 ```{r US_climate_change viz}
@@ -102,13 +117,11 @@ climate_change_gtrends <- gtrends(keyword = climate_search_terms,
 
 climate_change_gtrends[1]$interest_over_time
 
-
 US_climate_interest <- climate_change_gtrends %>% 
           .$interest_over_time %>% #not working
           glimpse()
 
-
- climate_change_plot <- US_climate_interest %>% 
+ climate_change_facet_plot <- US_climate_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
   # Begin ggplot
@@ -118,9 +131,11 @@ US_climate_interest <- climate_change_gtrends %>%
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
  #+ annotate()
-climate_change_plot
+climate_change_facet_plot
 ```
-Resource Cited: https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
+
+Resource Cited: 
+https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
 
 ```{r}
 search_terms <- c(
@@ -141,12 +156,9 @@ output_results[1]$interest_over_time
 FL_hurr_interest <- output_results %>% 
           .$interest_over_time %>% #not working
           glimpse()
-
 ```
 
-
 ```{r FL_hurricane viz}
-
  FL_hurr_plot <- FL_hurr_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
@@ -155,7 +167,7 @@ FL_hurr_interest <- output_results %>%
   geom_line(colour = "darkblue", size = 1.5) +
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
-FL_hurr_plot
+#FL_hurr_plot
 ```
 
 ```{r}
@@ -166,21 +178,87 @@ CA__top4_fires <- c(
 "North Complex"
 )
 
-CA_fire_trends <- gtrends(keyword = CA__top4_fires,
+CA_top_fire_trends <- gtrends(keyword = CA__top4_fires,
         geo = "US",
         time = "today 12-m") 
 #%>% summary()
 
 
-CA_fire_interest <- CA_fire_trends %>% 
+CA_fire_interest <- CA_top_fire_trends %>% 
           .$interest_over_time %>%
           glimpse()
 
-CA_fire_interest[1]$interest_over_time
+#CA_fire_interest[1]$interest_over_time
 ```
 
+```{r Generalizable plotting function}
+plot.gtrends.silent <- function(x, ...) {
+  df <- x$interest_over_time
+  df$date <- as.Date(df$date)
+  df$hits <- if(typeof(df$hits) == 'character'){
+    as.numeric(gsub('<','',df$hits))
+    } else {
+    df$hits
+    }
+ 
+  df$legend <- paste(df$keyword, " (", df$geo, ")", sep = "")
+ 
+  p <- ggplot(df, aes_string(x = "date", y = "hits", color = "legend")) +
+    geom_line() +
+    xlab("Date") +
+    ylab("Search hits") +
+    ggtitle("Interest over time") +
+    theme_bw() +
+    theme(legend.title = element_blank())
+ 
+  invisible(p)
+}
+```
+
+Resource Cited: 
+https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
+
+```{r}
+
+fire_and_climate_change_search_terms <- c(
+  "fire",
+  "climate change" #,
+  #"weather",
+  #"global warming"
+)
+
+CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+
+CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
+ 
+CA_fire_plot +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme(legend.position = "none")
+```
+
+```{r}
+
+graph_trend <- CA_all_fire_trends$interest_over_time
+
+ggplot(data = graph_trend) + 
+  aes(x = date, y = hits, color = keyword) + 
+  geom_line() + 
+  scale_colour_viridis_d(option  = "viridis") + 
+  labs(title = "Interest by Date", 
+       x = "Date", 
+       y = "Relative Interest") + 
+  #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme_minimal() + 
+  theme(legend.position = 'bottom')
+```
+
+Resource Cited:
+http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
+
 ```{r CA_fire viz}
- CA_fire_plot <- CA_fire_interest %>% 
+ CA_fire_facet_plot <- CA_fire_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
   # Begin ggplot
@@ -188,7 +266,7 @@ CA_fire_interest[1]$interest_over_time
   geom_line(colour = "dark red", size = 1.5) +
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
-CA_fire_plot
+CA_fire_facet_plot
 ```
 
 ```{r state_date declaration count}
@@ -199,7 +277,8 @@ FEMA_Declarations <- FEMA_Declarations %>%
 state_date_FEMA_decs <- FEMA_Declarations %>% 
   group_by(state, declaration_day) %>% 
   count()
-state_date_FEMA_decs
+
+#state_date_FEMA_decs
 ```
 ```{r state declarations count since date}
 
@@ -217,7 +296,6 @@ Since January 1st, 2000, the following 10 states have had the most FEMA
 natural disaster emergency declarations called:
 
 CA, TX, OK, WA, FL, OR, NM, NV, AZ, CO
-
 
 ### Data set for climate change Google searches by day:
 
@@ -243,12 +321,23 @@ climate_location_hits_table <- data.frame(climate_location_hits_table)
 names(climate_location_hits_table)[1] <- "location"
 names(climate_location_hits_table)[2] <- "hits"
 
-climate_location_hits_table
-
+#climate_location_hits_table
 ```
+
 ```{r}
-show(climate_trends)
-top_states <- c("CA", TX, OK, WA, FL, OR, NM, NV, AZ, CO)
+#show(climate_trends)
+
+n_states <- 10
+top_states <- state_FEMA_decs_total[["state"]][1:n_states]
+
+small_FEMA_table <- FEMA_Declarations %>% 
+  subset(state %in% top_states) %>% 
+  #filter(designated_area == "Statewide")
+  
+
+for (state in top_states) {
+  
+}
 
 ```
 
