@@ -252,36 +252,19 @@ cc_hits <- data.frame(indiv_cc_trend[["interest_over_time"]][["hits"]])
 temp_fire_df <- cbind(date, fire_hits)
 temp_cc_df <- cbind(date, cc_hits)
 
-#colnames(temp_cc_df)
+names(temp_fire_df)[1] <- "date"
+names(temp_fire_df)[2] <- "fire_hits"
 
-temp_fire_df <- temp_fire_df %>% 
-  rename(
-    c(
-    "indiv_fire_trend...interest_over_time......date..." = "date",
-    "indiv_fire_trend...interest_over_time......hits..." = "fire_hits"
-    )
-  )
+names(temp_cc_df)[1] <- "date"
+names(temp_cc_df)[2] <- "cc_hits"
 
-temp_cc_df <- temp_cc_df %>% 
-  rename(
-    indiv_fire_trend...interest_over_time......date... = date,
-    indiv_cc_trend...interest_over_time......hits... = cc_hits
-  )
+temp_joined <- inner_join(temp_fire_df, temp_cc_df, by = NULL) #def. by="date"
 
+graph_df <- temp_joined %>% 
+  pivot_longer(!date, names_to = "type", values_to = "hits")
 
-#names(temp_fire_df) <- "fire_hits"
-#names(temp_cc_df) <- "cc_hits"
-
-date_vector <- as.vector(temp_fire_df$date)
-temp_joined <- left_join(temp_fire_df, temp_cc_df, by = date_vector)
-#temp_joined
-
-#graph_df <- data.frame(temp)
-
-#graph_trend <- indiv_fire_trend$interest_over_time
-
-ggplot(data = temp_joined) + 
-  aes(x = date, y = fire_hits, color = keyword) + 
+ggplot(data = graph_df) + 
+  aes(x = date, y = hits, color = type) + 
   geom_line() + 
   scale_colour_viridis_d(option  = "viridis") + 
   labs(title = "Interest by Date", 
