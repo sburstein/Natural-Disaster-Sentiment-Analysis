@@ -282,6 +282,7 @@ state_date_FEMA_decs <- FEMA_Declarations %>%
 
 #state_date_FEMA_decs
 ```
+
 ```{r state declarations count since date}
 
 date_since <- 2000-01-01 # January 1st, 2000
