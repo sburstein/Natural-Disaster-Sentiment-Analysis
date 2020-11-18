@@ -222,9 +222,8 @@ https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
 
 fire_and_climate_change_search_terms <- c(
   "fire",
-  "climate change" #,
-  #"weather",
-  #"global warming"
+  "climate change",
+  "insurance"
 )
 
 CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
@@ -235,12 +234,15 @@ CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
  
 CA_fire_plot +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom")
 ```
 
 ```{r}
 
-graph_trend <- CA_all_fire_trends$interest_over_time
+indiv_fire_trend <- gtrends(keyword = "fire",
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+graph_trend <- indiv_fire_trend$interest_over_time
 
 ggplot(data = graph_trend) + 
   aes(x = date, y = hits, color = keyword) + 
