@@ -22,7 +22,7 @@ https://www.kaggle.com/headsortails/us-natural-disaster-declarations
 gtrendsR Package: 
 https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
-```{r message=FALSE}
+```{r load_packages&data, message=FALSE}
 
 #---PACKAGES------  > remove "#" if package not previously installed
 #install.packages("tidyverse")
@@ -46,7 +46,7 @@ view(M5_Subset)
 
 ### Generalizable Parameters for Event Filter
 
-```{r params}
+```{r initialized_parameters}
 # Start year to filter events (only show FEMA decs. since specified year)
 init_year <- 2015
 ```
@@ -54,18 +54,17 @@ init_year <- 2015
 
 ## Florida Hurricanes since `init_year`
 
-```{r FL_Hurricanes}
+```{r FL_Hurricanes_df}
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= init_year, state == "FL") %>% 
   select(declaration_title) %>% 
   distinct()
   
 FL_Hurricanes  
-#sub(".*? ", "", FEMA_Declarations$declaration_title)
 ```
 ## California Wildfires since `init_year`
 
-```{r CA_Fires}
+```{r CA_Fires_df}
 CA_Fires <- FEMA_Declarations %>% 
   filter(incident_type == "Fire", incident_begin_date >= init_year, state == "CA") %>% 
   select(declaration_title) %>% 
@@ -79,12 +78,13 @@ CA_Fires
 
 ```{r gtrends_function}
 
-list_of_weather_events<-c("camp fire","hurricane")
+list_of_weather_events <- c("camp fire",
+                            "hurricane")
 
-finaldata<-as.data.frame(NULL)
-for (i in 1:length(list_of_weather_events)){
+finaldata <- as.data.frame(NULL)
+for (i in 1:length(list_of_weather_events)) {
   weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
-                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event.Use Lubridate
+                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event. Use Lubridate
   all_states_interest <- as.data.frame(weather_event_gtrends[3])
   finaldata <- rbind(finaldata, all_states_interest)
   print(i)
@@ -137,7 +137,7 @@ climate_change_facet_plot
 Resource Cited: 
 https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
 
-```{r}
+```{r US_Hurricane_Interest}
 search_terms <- c(
 "Hurricane Michael",		
 "Hurricane Dorian",		
@@ -170,7 +170,7 @@ FL_hurr_interest <- output_results %>%
 #FL_hurr_plot
 ```
 
-```{r}
+```{r top_4_fires}
 CA__top4_fires <- c(
 "Mendocino Complex",		
 "August Fire",		
@@ -218,7 +218,7 @@ plot.gtrends.silent <- function(x, ...) {
 Resource Cited: 
 https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
 
-```{r}
+```{r single_hit_yaxis_interest_plot}
 
 fire_and_climate_change_search_terms <- c(
   "fire",
@@ -237,7 +237,7 @@ CA_fire_plot +
   theme(legend.position = "bottom")
 ```
 
-```{r}
+```{r relative_yaxis_hit_plot}
 
 indiv_fire_trend <- gtrends(keyword = "fire",
         geo = "CA") #time = "today+5-y" Last five years (default)
@@ -321,7 +321,7 @@ CA, TX, OK, WA, FL, OR, NM, NV, AZ, CO
 
 ### Data set for climate change Google searches by day:
 
-```{r}
+```{r climate_change_interest_by_state}
 search_terms <- c(
 "climate change"
 )
@@ -346,7 +346,7 @@ names(climate_location_hits_table)[2] <- "hits"
 #climate_location_hits_table
 ```
 
-```{r}
+```{r top_states_function}
 #show(climate_trends)
 
 n_states <- 10
