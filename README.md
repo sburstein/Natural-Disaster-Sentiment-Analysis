@@ -8,12 +8,14 @@ The United States experience a large variety of natural disasters each year: dev
 Note, that the data also includes biological disasters, in particular declarations made in response to the ongoing Covid-19 pandemic.
 
 ### Content
+
 This summary dataset is a high-level summary of all federally declared disasters since 1953. I downloaded it from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2) and applied a few simple data cleaning and formatting measures. The features of the main dataset will be described in detail right below. In addition, I provide a sub-dataset that is tailored to the parameters of the ongoing [M5 Forecasting competition](https://www.kaggle.com/c/m5-forecasting-accuracy); which is outlined below the main one. Some example for using the data in the M5 competition are given in my [EDA Kernel](https://www.kaggle.com/headsortails/back-to-predict-the-future-interactive-m5-eda).
 
 * `us_disaster_declarations.csv`: the full dataset with all rows and columns. The geographical resolution is the county level, with [FIPS codes](https://en.wikipedia.org/wiki/FIPS_county_code) being used to encode the counties. In addition to the fips and timing features, the data provides the type of disaster and also binary flags that indicate whether specific aid programs were triggered in response.
 - `us_disasters_m5.csv`: the M5-specific subset. Constrained to the 3 states CA, TX, and WI; as well as to the time range of Jan 2011 - June 2016. I also removed a few columns that I consider unnecessary for this more tailored analysis.
 
 ### Column Description
+
 Most of those descriptions have been taken verbatim from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2). I added small clarifications to some of them:
 
 Full dataset `us_disaster_declarations.csv`:
@@ -73,8 +75,8 @@ County-level data from the Federal Emergency Management Agency: 1953 - today
 
 data set (Version 15 updated as of 11/14/2020) accessible [here](view-source:https://www.kaggle.com/headsortails/us-natural-disaster-declarations)
 
-
 ### Licence
+
 Data and content created by government employees within the scope of their employment are not subject to domestic copyright protection under 17 U.S.C. § 105. Government works are by default in the U.S. Public Domain. ","url":"https://www.kaggle.com/headsortails/us-natural-disaster-declarations","sameAs":"","version":15,"keywords":["subject, people and society, business","subject, people and society, law, government","subject, health and fitness, health, health conditions, diseases, covid19","subject, people and society, law, government, public safety","subject, earth and nature, environment, natural disasters"],"license":{"@type":"CreativeWork","name":"U.S. Government Works","url":"https://www.usa.gov/government-works/"},"identifier":["619729"],"includedInDataCatalog":{"@type":"DataCatalog","name":"Kaggle","url":"https://www.kaggle.com"},"creator":{"@type":"Person","name":"Heads or Tails","url":"https://www.kaggle.com/headsortails","image":"https://storage.googleapis.com/kaggle-avatars/thumbnails/1014468-kg.jpg"},"distribution":[{"@type":"DataDownload","requiresSubscription":true,"encodingFormat":"zip","fileFormat":"zip","contentUrl":"https://www.kaggle.com/headsortails/us-natural-disaster-declarations/download","contentSize":"15985285 bytes"}],"commentCount":0,"dateModified":"2020-11-14T21:08:01.637","discussionUrl":"https://www.kaggle.com/headsortails/us-natural-disaster-declarations/discussion","alternateName":"County-level data from the Federal Emergency Management Agency: 1953 - today","isAccessibleForFree":true,"thumbnailUrl":"https://storage.googleapis.com/kaggle-datasets-images/619729/1106528/539f2881e8132cb536c4ddeb685356d5/dataset-card.jpg?t=2020-04-25-02-03-50","interactionStatistic":[{"@type":"InteractionCounter","interactionType":"http://schema.org/CommentAction","userInteractionCount":0},{"@type":"InteractionCounter","interactionType":"http://schema.org/DownloadAction","userInteractionCount":575},{"@type":"InteractionCounter","interactionType":"http://schema.org/ViewAction","userInteractionCount":3991},{"@type":"InteractionCounter","interactionType":"http://schema.org/LikeAction","userInteractionCount":45}]}
     
 
