@@ -34,11 +34,11 @@ library(ggthemes)
 #install.packages("maps")
 library(maps)
 
-#---DATA---------
+#---DATA--------- > remove "#" to view raw data
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
-view(FEMA_Declarations)
+#view(FEMA_Declarations)
 M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
-view(M5_Subset)
+#view(M5_Subset)
 ```
 <br/><br/>
 
@@ -48,7 +48,7 @@ view(M5_Subset)
 
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
-init_year <- 2015
+date_5y <- Sys.Date() - 365.25*5
 ```
 
 
@@ -56,7 +56,7 @@ init_year <- 2015
 
 ```{r FL_Hurricanes_df, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
-  filter(incident_type == "Hurricane", incident_begin_date >= init_year, state == "FL") %>% 
+  filter(incident_type == "Hurricane", incident_begin_date >= date_5y, state == "FL") %>% 
   select(declaration_title) %>% 
   distinct()
   
@@ -66,7 +66,7 @@ FL_Hurricanes
 
 ```{r CA_Fires_df, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
-  filter(incident_type == "Fire", incident_begin_date >= init_year, state == "CA") %>% 
+  filter(incident_type == "Fire", incident_begin_date >= date_5y, state == "CA") %>% 
   select(declaration_title) %>% 
   distinct()
   
@@ -299,15 +299,12 @@ state_date_FEMA_decs <- FEMA_Declarations %>%
   group_by(state, declaration_day) %>% 
   count()
 
-#state_date_FEMA_decs
 ```
 
 ```{r state declarations count since date, echo=FALSE}
 
-date_since <- 2000-01-01 # January 1st, 2000
-
 state_FEMA_decs_total <- state_date_FEMA_decs %>%
-  filter(declaration_day >= date_since) %>% 
+  filter(declaration_day >= date_5y) %>% 
   group_by(state) %>% 
   count() %>% 
   arrange(desc(n))
@@ -352,9 +349,25 @@ names(climate_location_hits_table)[2] <- "hits"
 n_states <- 10
 top_states <- state_FEMA_decs_total[["state"]][1:n_states]
 
+date_5y <- Sys.Date() - 365.25*5
+
 small_FEMA_table <- FEMA_Declarations %>% 
-  subset(state %in% top_states) %>% 
-  #filter(designated_area == "Statewide")
+  subset(state %in% top_states) %>%
+  mutate(incident_begin_day = gsub( " .*$", "", incident_begin_date ),
+            incident_end_day = gsub( " .*$", "", incident_end_date ) ) %>% 
+  filter(declaration_day >= date_5y) %>% 
+  select(declaration_day, 
+         state, 
+         designated_area,
+         declaration_type,
+         incident_type, 
+         declaration_title, 
+         incident_begin_day, 
+         incident_end_day
+         )
+small_FEMA_table
+#%>% filter(designated_area == "Statewide")
+  
   
 
 for (state in top_states) {
