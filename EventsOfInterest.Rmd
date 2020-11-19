@@ -1,7 +1,7 @@
 ---
-title: "Final Project Initial Analysis"
+title: "Natural Disaster Sentiment Analysis"
 author: "Scott Burstein"
-date: "10/21/2020"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 ###"Data Science and Society (Sociology 367) - Final Project"
 output: html_document
 ---
@@ -311,10 +311,10 @@ state_FEMA_decs_total <- state_date_FEMA_decs %>%
 
 state_FEMA_decs_total
 ```
-Since January 1st, 2000, the following 10 states have had the most FEMA 
+Since `r date_5y` [as of 2020-11-19], the following 10 states have had the most FEMA 
 natural disaster emergency declarations called:
 
-CA, TX, OK, WA, FL, OR, NM, NV, AZ, CO
+CA, WA, OR, OK, FL, TX, NV, AZ, LA, MS
 
 ### Data set for climate change Google searches by day:
 
