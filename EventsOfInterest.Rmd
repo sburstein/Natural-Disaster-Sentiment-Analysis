@@ -46,7 +46,7 @@ view(M5_Subset)
 
 ### Generalizable Parameters for Event Filter
 
-```{r initialized_parameters}
+```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
 init_year <- 2015
 ```
@@ -54,7 +54,7 @@ init_year <- 2015
 
 ## Florida Hurricanes since `init_year`
 
-```{r FL_Hurricanes_df}
+```{r FL_Hurricanes_df, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= init_year, state == "FL") %>% 
   select(declaration_title) %>% 
@@ -64,7 +64,7 @@ FL_Hurricanes
 ```
 ## California Wildfires since `init_year`
 
-```{r CA_Fires_df}
+```{r CA_Fires_df, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
   filter(incident_type == "Fire", incident_begin_date >= init_year, state == "CA") %>% 
   select(declaration_title) %>% 
@@ -76,7 +76,7 @@ CA_Fires
 
 
 
-```{r gtrends_function}
+```{r gtrends_function, echo=FALSE}
 
 list_of_weather_events <- c("camp fire",
                             "hurricane")
@@ -101,7 +101,7 @@ climate_change_trend <- gtrends(keyword = "climate change",
 #climate_change_trend[1]$interest_over_time
 ```
 
-```{r US_climate_change viz}
+```{r US_climate_change viz, echo=FALSE}
 
 climate_search_terms <- c(
 "climate change",		
@@ -137,7 +137,7 @@ climate_change_facet_plot
 Resource Cited: 
 https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
 
-```{r US_Hurricane_Interest}
+```{r US_Hurricane_Interest, echo=FALSE}
 search_terms <- c(
 "Hurricane Michael",		
 "Hurricane Dorian",		
@@ -158,7 +158,7 @@ FL_hurr_interest <- output_results %>%
           glimpse()
 ```
 
-```{r FL_hurricane viz}
+```{r FL_hurricane viz, echo=FALSE}
  FL_hurr_plot <- FL_hurr_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
@@ -170,7 +170,7 @@ FL_hurr_interest <- output_results %>%
 #FL_hurr_plot
 ```
 
-```{r top_4_fires}
+```{r top_4_fires, echo=FALSE}
 CA__top4_fires <- c(
 "Mendocino Complex",		
 "August Fire",		
@@ -191,7 +191,7 @@ CA_fire_interest <- CA_top_fire_trends %>%
 #CA_fire_interest[1]$interest_over_time
 ```
 
-```{r Generalizable plotting function}
+```{r Generalizable plotting function, echo=FALSE}
 plot.gtrends.silent <- function(x, ...) {
   df <- x$interest_over_time
   df$date <- as.Date(df$date)
@@ -218,7 +218,7 @@ plot.gtrends.silent <- function(x, ...) {
 Resource Cited: 
 https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
 
-```{r single_hit_yaxis_interest_plot}
+```{r single_hit_yaxis_interest_plot, echo=FALSE}
 
 fire_and_climate_change_search_terms <- c(
   "fire",
@@ -229,7 +229,6 @@ fire_and_climate_change_search_terms <- c(
 CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
         geo = "CA") #time = "today+5-y" Last five years (default)
 
-
 CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
  
 CA_fire_plot +
@@ -237,7 +236,7 @@ CA_fire_plot +
   theme(legend.position = "bottom")
 ```
 
-```{r relative_yaxis_hit_plot}
+```{r relative_yaxis_hit_plot, echo=FALSE}
 
 indiv_fire_trend <- gtrends(keyword = "fire",
         geo = "CA") #time = "today+5-y" Last five years (default)
@@ -259,6 +258,7 @@ names(temp_cc_df)[1] <- "date"
 names(temp_cc_df)[2] <- "cc_hits"
 
 temp_joined <- inner_join(temp_fire_df, temp_cc_df, by = NULL) #def. by="date"
+view(temp_joined)
 
 graph_df <- temp_joined %>% 
   pivot_longer(!date, names_to = "type", values_to = "hits")
@@ -278,7 +278,7 @@ ggplot(data = graph_df) +
 Resource Cited:
 http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
 
-```{r CA_fire viz}
+```{r CA_fire viz, echo=FALSE}
  CA_fire_facet_plot <- CA_fire_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
@@ -290,7 +290,7 @@ http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a439371
 CA_fire_facet_plot
 ```
 
-```{r state_date declaration count}
+```{r state_date declaration count, echo=FALSE}
 
 FEMA_Declarations <- FEMA_Declarations %>% 
   mutate(declaration_day = gsub( " .*$", "", declaration_date ))
@@ -302,7 +302,7 @@ state_date_FEMA_decs <- FEMA_Declarations %>%
 #state_date_FEMA_decs
 ```
 
-```{r state declarations count since date}
+```{r state declarations count since date, echo=FALSE}
 
 date_since <- 2000-01-01 # January 1st, 2000
 
@@ -321,7 +321,7 @@ CA, TX, OK, WA, FL, OR, NM, NV, AZ, CO
 
 ### Data set for climate change Google searches by day:
 
-```{r climate_change_interest_by_state}
+```{r climate_change_interest_by_state, echo=FALSE}
 search_terms <- c(
 "climate change"
 )
@@ -346,7 +346,7 @@ names(climate_location_hits_table)[2] <- "hits"
 #climate_location_hits_table
 ```
 
-```{r top_states_function}
+```{r top_states_function, echo=FALSE}
 #show(climate_trends)
 
 n_states <- 10
