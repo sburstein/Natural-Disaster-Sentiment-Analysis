@@ -16,11 +16,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load the Libraries and Datasets
 
-Kaggle Natural Disaster Dataset: 
-https://www.kaggle.com/headsortails/us-natural-disaster-declarations
+### README
+See README for more thorough description of both `FEMA_Declarations` and 
+`M5_Subset` data sets, with content summary, column variable descriptions, 
+acknowledgments, source description and licensing information.
 
-gtrendsR Package: 
-https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+### Primary Data Source
+[Kaggle Natural Disaster Data set](https://www.kaggle.com/headsortails/us-natural-disaster-declarations). The 
+`FEMA_Declarations` data set is used for the bulk of this analysis and is also 
+integrated with Google Trends data.
+
+### Google Trends Package
+[gtrendsR CRAN Package](https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf) used to perform and display Google Trends Queries.
 
 ```{r load_packages&data, message=FALSE}
 
@@ -46,11 +53,24 @@ M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
 
 ### Generalizable Parameters for Event Filter
 
+Google Trends data is accessible in R through the gTrendsR package, which was 
+created by [Philippe Masicotte](https://github.com/PMassicotte) and made 
+available through [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/).
+
+Google trends data for specified search queries is represented by a `hits` variable, which expresses the relative volume of Google searches for specific 
+terms over geographical and time parameters.
+
+In order to produce research that is both reproducible and timely, certain parameters can be initialized. Since gTrendsR can easily return Google Trends information from the past five years, it is 
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
 date_5y <- Sys.Date() - 365.25*5
 ```
+The date this file was last compiled: 
+Current date (`Sys.Date`) is  `r Sys.Date()`.
 
+The date 5 years before, which is the starting time bound for subsequent Google 
+Trends queries shown below: 
+Variable `date_5y` is `r date_5y`.
 
 ## Florida Hurricanes since `init_year`
 
