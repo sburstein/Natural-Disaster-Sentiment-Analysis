@@ -72,17 +72,21 @@ The date 5 years before, which is the starting time bound for subsequent Google
 Trends queries shown below: 
 Variable `date_5y` is `r date_5y`.
 
-## Florida Hurricanes since `init_year`
+## Florida Hurricanes since `r date_5y`
+
+A list of all FEMA declarations for hurricanes in Florida occuring in the last 5 years.
 
 ```{r FL_Hurricanes_df, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= date_5y, state == "FL") %>% 
   select(declaration_title) %>% 
   distinct()
-  
-FL_Hurricanes  
+
+FL_Hurricanes
 ```
-## California Wildfires since `init_year`
+## California Wildfires since `r date_5y`
+
+A list of all FEMA declarations for wildfires in California occuring in the last 5 years.
 
 ```{r CA_Fires_df, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
@@ -94,7 +98,15 @@ CA_Fires
 ```
 # Research Questions
 
+*1) Do Google search patterns correlate with real-world events?*
 
+
+*2) Does interest in climate change increase regionally after the occurrence of a natural disaster?*
+
+
+*3) Do people become more environmentally conscious, and modify their Google search behavior after a natural disaster?*
+
+# Initial Analysis
 
 ```{r gtrends_function, echo=FALSE}
 
