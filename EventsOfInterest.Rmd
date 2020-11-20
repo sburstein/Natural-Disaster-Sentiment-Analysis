@@ -213,15 +213,20 @@ Another interesting property of Google Trends data is that in addition to
 tracking human sentiment towards longstanding topics, like climate change, it 
 can also be used to detect one-time events, such as Hurricane Isaias and 
 Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and 
-Southeastern United States. They were classified as Category 1 and Category 2 
-storms respectively, leaving more than $10.0 billion USD of damage in their 
-wakes.
+Southeastern United States in 2020. They were classified as Category 1 and 
+Category 2 storms respectively, leaving more than $10.0 billion USD of damage in
+their wakes.
+
+
+
 
 Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
-more than ripples (hits ≤ 5) for the entire past year. Interestingly, they too 
-peaked during the 2020 hurricane season. It is reasonable to assume that people 
-do become more interested in past natural disasters in order to contextualize 
-the events that they are currently experiencing.
+more than ripples (hits ≤ 5) for the entirety of this past year. Interestingly 
+though, search hits for these terms also increased during the 2020 hurricane 
+season - around the time Google searches for active hurricanes spiked. It is 
+reasonable to assume that people do become more interested in past natural 
+disasters in order to contextualize the events that they are currently 
+experiencing.
 
 ```{r FL_hurricane viz, echo=FALSE}
  FL_hurr_plot <- FL_hurr_interest %>% 
@@ -237,24 +242,54 @@ FL_hurr_plot
 
 ```{r top_4_fires, echo=FALSE}
 CA__top4_fires <- c(
-"Mendocino Complex",		
-"August Fire",		
-"Creek Fire",		
-"North Complex"
+"bobcat fire",		
+"czu fire",		
+"creek fire",		
+"bear fire"
 )
 
 CA_top_fire_trends <- gtrends(keyword = CA__top4_fires,
         geo = "US",
-        time = "today 12-m") 
-#%>% summary()
+        time = "today 12-m") #%>% summary()
 
 
 CA_fire_interest <- CA_top_fire_trends %>% 
-          .$interest_over_time %>%
+          .$interest_over_time %>% 
           glimpse()
 
 #CA_fire_interest[1]$interest_over_time
 ```
+
+```{r CA_fire viz, echo=FALSE}
+ CA_fire_facet_plot <- CA_fire_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "dark red", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+CA_fire_facet_plot
+```
+```{r single_hit_yaxis_interest_plot, echo=FALSE}
+
+fire_and_climate_change_search_terms <- c(
+  "thomas fire",
+  "august fire",
+  "mendocino fire",
+  "creek fire"
+)
+
+CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
+ 
+CA_fire_plot +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme(legend.position = "bottom")
+```
+
 
 ```{r Generalizable plotting function, echo=FALSE}
 plot.gtrends.silent <- function(x, ...) {
@@ -338,18 +373,6 @@ ggplot(data = graph_df) +
   #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   theme_minimal() + 
   theme(legend.position = 'bottom')
-```
-
-```{r CA_fire viz, echo=FALSE}
- CA_fire_facet_plot <- CA_fire_interest %>% 
-  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
-  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
-  # Begin ggplot
-  ggplot(aes(x = date, y = hits)) +
-  geom_line(colour = "dark red", size = 1.5) +
-  facet_wrap(~keyword) +
-  ggthemes::theme_economist()
-CA_fire_facet_plot
 ```
 
 ```{r state_date declaration count, echo=FALSE}
