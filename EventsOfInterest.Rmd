@@ -148,6 +148,12 @@ climate_change_trend <- gtrends(keyword = "climate change",
 #climate_change_trend[1]$interest_over_time
 ```
 
+Visualizations, such as the faceted line plots below help illustrate important 
+trends in sentiment towards climate change and associated topics. For example, 
+interest in climate change, global warming, and the green new deal topics all 
+spiked during the 2020 election season, as climate change became an important 
+topic in the Presidential race.
+
 ```{r US_climate_change viz, echo=FALSE}
 
 climate_search_terms <- c(
@@ -203,6 +209,20 @@ FL_hurr_interest <- output_results %>%
           glimpse()
 ```
 
+Another interesting property of Google Trends data is that in addition to 
+tracking human sentiment towards longstanding topics, like climate change, it 
+can also be used to detect one-time events, such as Hurricane Isaias and 
+Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and 
+Southeastern United States. They were classified as Category 1 and Category 2 
+storms respectively, leaving more than $10.0 billion USD of damage in their 
+wakes.
+
+Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
+more than ripples (hits ≤ 5) for the entire past year. Interestingly, they too 
+peaked during the 2020 hurricane season. It is reasonable to assume that people 
+do become more interested in past natural disasters in order to contextualize 
+the events that they are currently experiencing.
+
 ```{r FL_hurricane viz, echo=FALSE}
  FL_hurr_plot <- FL_hurr_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
@@ -212,7 +232,7 @@ FL_hurr_interest <- output_results %>%
   geom_line(colour = "darkblue", size = 1.5) +
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
-#FL_hurr_plot
+FL_hurr_plot
 ```
 
 ```{r top_4_fires, echo=FALSE}
