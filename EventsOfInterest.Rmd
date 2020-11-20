@@ -17,17 +17,28 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Load the Libraries and Datasets
 
 ### README
+
 See README for more thorough description of both `FEMA_Declarations` and 
 `M5_Subset` data sets, with content summary, column variable descriptions, 
 acknowledgments, source description and licensing information.
 
 ### Primary Data Source
+
 [Kaggle Natural Disaster Data set](https://www.kaggle.com/headsortails/us-natural-disaster-declarations). The 
 `FEMA_Declarations` data set is used for the bulk of this analysis and is also 
 integrated with Google Trends data.
 
 ### Google Trends Package
-[gtrendsR CRAN Package](https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf) used to perform and display Google Trends Queries.
+
+[gtrendsR CRAN Package](https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf) 
+used to perform and display Google Trends Queries.
+
+Google Trends data is accessible in R through the gTrendsR package, which was 
+created by [Philippe Masicotte](https://github.com/PMassicotte) and made 
+available through [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/).
+
+Google trends data for specified search queries is represented by a `hits` variable, which expresses the relative volume of Google searches for specific 
+terms over geographical and time parameters.
 
 ```{r load_packages&data, message=FALSE}
 
@@ -53,14 +64,14 @@ M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
 
 ### Generalizable Parameters for Event Filter
 
-Google Trends data is accessible in R through the gTrendsR package, which was 
-created by [Philippe Masicotte](https://github.com/PMassicotte) and made 
-available through [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/).
+In order to produce research that is both reproducible and timely, certain 
+parameters can be initialized and instantiated once, and then referenced 
+multiple times later. 
+Since gTrendsR can easily return Google Trends information from the past five 
+years, it is intuitive to create a `date_5y` variable that can be used to filter 
+FEMA declarations by date, thus eliminating all those that occurred previously. 
+The data set at large contains FEMA declarations from 1963 through the present.
 
-Google trends data for specified search queries is represented by a `hits` variable, which expresses the relative volume of Google searches for specific 
-terms over geographical and time parameters.
-
-In order to produce research that is both reproducible and timely, certain parameters can be initialized. Since gTrendsR can easily return Google Trends information from the past five years, it is 
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
 date_5y <- Sys.Date() - 365.25*5
@@ -74,7 +85,8 @@ Variable `date_5y` is `r date_5y`.
 
 ## Florida Hurricanes since `r date_5y`
 
-A list of all FEMA declarations for hurricanes in Florida occuring in the last 5 years.
+A list of all FEMA declarations for hurricanes in Florida occurring in the last 
+5 years.
 
 ```{r FL_Hurricanes_df, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
@@ -86,7 +98,8 @@ FL_Hurricanes
 ```
 ## California Wildfires since `r date_5y`
 
-A list of all FEMA declarations for wildfires in California occuring in the last 5 years.
+A list of all FEMA declarations for wildfires in California occurring in the 
+last 5 years.
 
 ```{r CA_Fires_df, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
@@ -101,10 +114,12 @@ CA_Fires
 *1) Do Google search patterns correlate with real-world events?*
 
 
-*2) Does interest in climate change increase regionally after the occurrence of a natural disaster?*
+*2) Does interest in climate change increase regionally after the occurrence of 
+a natural disaster?*
 
 
-*3) Do people become more environmentally conscious, and modify their Google search behavior after a natural disaster?*
+*3) Do people become more environmentally conscious, and modify their Google 
+search behavior after a natural disaster?*
 
 # Initial Analysis
 
@@ -123,7 +138,7 @@ for (i in 1:length(list_of_weather_events)) {
   Sys.sleep(5)
 }
 
-finaldata
+#finaldata
 
 
 climate_change_trend <- gtrends(keyword = "climate change",
@@ -165,9 +180,7 @@ US_climate_interest <- climate_change_gtrends %>%
  #+ annotate()
 climate_change_facet_plot
 ```
-
-Resource Cited: 
-https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/
+[Technical Resource Cited](https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/)
 
 ```{r US_Hurricane_Interest, echo=FALSE}
 search_terms <- c(
@@ -246,9 +259,8 @@ plot.gtrends.silent <- function(x, ...) {
   invisible(p)
 }
 ```
+Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
 
-Resource Cited: 
-https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
 
 ```{r single_hit_yaxis_interest_plot, echo=FALSE}
 
@@ -267,6 +279,7 @@ CA_fire_plot +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   theme(legend.position = "bottom")
 ```
+Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
 
 ```{r relative_yaxis_hit_plot, echo=FALSE}
 
@@ -306,9 +319,6 @@ ggplot(data = graph_df) +
   theme_minimal() + 
   theme(legend.position = 'bottom')
 ```
-
-Resource Cited:
-http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
 
 ```{r CA_fire viz, echo=FALSE}
  CA_fire_facet_plot <- CA_fire_interest %>% 
@@ -407,4 +417,24 @@ for (state in top_states) {
 }
 
 ```
+# Bibliography
 
+## Existing Scholarship on Climate Change Sentiment Analysis
+
+1. CHOI, H. and VARIAN, H. (2012), Predicting the Present with Google Trends. 
+Economic Record, 88: 2-9. https://doi.org/10.1111/j.1475-4932.2012.00809.x
+
+2. "What do Google searches tell us about our climate change fears?" 
+NewsRx Health & Science, 3 Aug. 2014, p. 177. Gale Academic OneFile, https://link.gale.com/apps/doc/A378494502/AONE?u=duke_perkins&sid=AONE&xid=7d6f5991. Accessed 16 Nov. 2020.
+
+3. 
+
+## Technical Sources for Programming & Visualizations
+
+1. https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+
+2. https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
+
+3. http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
+
+4. 
