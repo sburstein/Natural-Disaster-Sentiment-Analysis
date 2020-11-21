@@ -51,6 +51,9 @@ library(gtrendsR)
 library(ggthemes)
 #install.packages("maps")
 library(maps)
+#install.packages("lubridate")
+library(lubridate)
+
 
 #---DATA--------- > remove "#" to view raw data
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
@@ -75,6 +78,13 @@ The data set at large contains FEMA declarations from 1963 through the present.
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
 date_5y <- Sys.Date() - 365.25*5
+
+# Study 1:
+#state1 <- 
+#event_type1 <-
+
+# Study 2:
+
 ```
 The date this file was last compiled: 
 Current date (`Sys.Date`) is  `r Sys.Date()`.
@@ -82,6 +92,12 @@ Current date (`Sys.Date`) is  `r Sys.Date()`.
 The date 5 years before, which is the starting time bound for subsequent Google 
 Trends queries shown below: 
 Variable `date_5y` is `r date_5y`.
+
+```{r}
+FEMA_Declarations <- FEMA_Declarations %>% 
+  mutate(declaration_day = gsub( " .*$", "", declaration_date ))
+```
+
 
 ## Florida Hurricanes since `r date_5y`
 
@@ -91,11 +107,111 @@ A list of all FEMA declarations for hurricanes in Florida occurring in the last
 ```{r FL_Hurricanes_df, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= date_5y, state == "FL") %>% 
-  select(declaration_title) %>% 
+  select(declaration_title, declaration_day) %>% 
   distinct()
 
 FL_Hurricanes
 ```
+
+```{r}
+
+num_subsequent_days <- 14
+
+list_of_weather_events <- as.vector(FL_Hurricanes$declaration_title)
+list_of_weather_dates <- as.vector(FL_Hurricanes$declaration_day)
+
+finaldata <- as.data.frame(NULL)
+for (i in 1:length(list_of_weather_events)) {
+  
+  start_date <- ymd(list_of_weather_dates[i])
+
+  end_date <- ymd(list_of_weather_dates[i]) + num_subsequent_days
+
+  comb_time <- paste(start_date, end_date)
+
+  
+  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
+                     geo = "US", time = comb_time)
+  
+  # weather_event_gtrends[1] object tracks interest_over_time
+  all_time_interest <- as.data.frame(weather_event_gtrends[1])
+  finaldata <- rbind(finaldata, all_time_interest)
+  print(i)
+  Sys.sleep(5)
+}
+finaldata
+```
+
+
+
+
+```{r}
+
+a <- finaldata %>%
+      mutate(event_date = as.Date(event_date),
+             hits_date = as.Date(hits_date)) %>% 
+      select(event_date, keyword, hits_date, hits)
+a
+
+relative_date_mod <- a %>% 
+  mutate(rel_date = hits_date - event_date)
+relative_date_mod
+
+x <- relative_date_mod %>% 
+  pivot_wider(names_from = rel_date, values_from = hits)
+x
+
+x <- x %>%
+  group_by(keyword) %>%
+  summarise_if(
+    is.numeric,
+    sum,
+    #na.rm = TRUE
+  )
+x
+```
+
+
+
+```{r}
+
+
+a <- finaldata %>% 
+      mutate(event_date = gsub( " .*$", "", interest_over_time.time),
+             hits_date = interest_over_time.date,
+             hits = interest_over_time.hits,
+             keyword = interest_over_time.keyword) %>% 
+      select(event_date, keyword, hits_date, hits)
+a
+
+finaldata <- finaldata %>% 
+  mutate(event_date = gsub( " .*$", "", interest_over_time.time),
+         hits_date = interest_over_time.date,
+         hits = interest_over_time.hits,
+         keyword = interest_over_time.keyword) %>% 
+  select(event_date, keyword, hits_date, hits) %>% #event_date, 
+  pivot_wider(names_from = hits_date, values_from = hits)
+
+finaldata
+
+for (i in 1:length(list_of_weather_events)) {
+  weather_event_gtrends[]$
+  
+}
+
+start_date <- "2015-11-25"
+start_date <- ymd(start_date)
+start_date
+end_date <- start_date + 14
+end_date
+comb_time <- paste(start_date, end_date)
+comb_time
+
+test <- start_date - end_date
+test
+```
+
+
 ## California Wildfires since `r date_5y`
 
 A list of all FEMA declarations for wildfires in California occurring in the 
@@ -104,11 +220,30 @@ last 5 years.
 ```{r CA_Fires_df, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
   filter(incident_type == "Fire", incident_begin_date >= date_5y, state == "CA") %>% 
-  select(declaration_title) %>% 
+  select(declaration_title, declaration_day) %>% 
   distinct()
   
 CA_Fires  
 ```
+```{r}
+
+list_of_weather_events <- as.vector(CA_Fires$declaration_title)
+
+finaldata <- as.data.frame(NULL)
+for (i in 1:length(list_of_weather_events)) {
+  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
+                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event. Use Lubridate
+  all_states_interest <- as.data.frame(weather_event_gtrends[3])
+  finaldata <- rbind(finaldata, all_states_interest)
+  print(i)
+  Sys.sleep(5)
+}
+
+climate_change_trend[1]$interest_over_time
+
+```
+
+
 # Research Questions
 
 *1) Do Google search patterns correlate with real-world events?*
@@ -243,7 +378,7 @@ FL_hurr_plot
 ```{r top_4_fires, echo=FALSE}
 CA__top4_fires <- c(
 "bobcat fire",		
-"czu fire",		
+"august fire",		
 "creek fire",		
 "bear fire"
 )
@@ -376,14 +511,9 @@ ggplot(data = graph_df) +
 ```
 
 ```{r state_date declaration count, echo=FALSE}
-
-FEMA_Declarations <- FEMA_Declarations %>% 
-  mutate(declaration_day = gsub( " .*$", "", declaration_date ))
-
 state_date_FEMA_decs <- FEMA_Declarations %>% 
   group_by(state, declaration_day) %>% 
   count()
-
 ```
 
 ```{r state declarations count since date, echo=FALSE}
