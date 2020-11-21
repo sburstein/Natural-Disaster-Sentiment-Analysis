@@ -108,7 +108,7 @@ A list of all FEMA declarations for hurricanes in Florida occurring in the last
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= date_5y, state == "FL") %>% 
   select(declaration_title, declaration_day) %>% 
-  distinct()
+  distinct(declaration_title, .keep_all = TRUE)
 
 FL_Hurricanes
 ```
@@ -142,9 +142,6 @@ for (i in 1:length(list_of_weather_events)) {
 finaldata
 ```
 
-
-
-
 ```{r}
 
 a <- finaldata %>%
@@ -161,20 +158,39 @@ x <- relative_date_mod %>%
   pivot_wider(names_from = rel_date, values_from = hits)
 x
 
-x <- x %>%
+n_vec <- as.vector(0:num_subsequent_days) 
+coalesce_by_column <- function(df) {
+  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], df[10], df[11], df[12], df[13], df[14], df[15]))
+}
+
+x %>%
   group_by(keyword) %>%
-  summarise_if(
-    is.numeric,
-    sum,
-    #na.rm = TRUE
-  )
-x
+  summarise_all(coalesce_by_column)
 ```
 
 
 
 ```{r}
 
+n_vec <- as.vector(0:num_subsequent_days) 
+
+for (row in nrow(x)) {
+  for (n in n_vec) {
+    if (n != 0) {
+      x[row] = x
+    }
+    
+  }
+}
+
+y <- x %>%
+  group_by(keyword) %>%
+  summarise_if(
+    is.numeric,
+    sum,
+    #na.rm = TRUE
+  )
+y
 
 a <- finaldata %>% 
       mutate(event_date = gsub( " .*$", "", interest_over_time.time),
@@ -225,6 +241,7 @@ CA_Fires <- FEMA_Declarations %>%
   
 CA_Fires  
 ```
+
 ```{r}
 
 list_of_weather_events <- as.vector(CA_Fires$declaration_title)
@@ -406,6 +423,8 @@ CA_fire_interest <- CA_top_fire_trends %>%
   ggthemes::theme_economist()
 CA_fire_facet_plot
 ```
+
+
 ```{r single_hit_yaxis_interest_plot, echo=FALSE}
 
 fire_and_climate_change_search_terms <- c(
