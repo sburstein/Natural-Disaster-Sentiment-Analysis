@@ -108,14 +108,26 @@ all_FEMA_decs <- FEMA_Declarations %>%
   ungroup()
 ```
 
+`alltime_FEMA_byState` contains the number of FEMA declarations for every US 
+state and territory since 1963.
+
 ```{r all_FEMA_Declarations_by_State, echo=FALSE}
-alltime_FEMA_byState <- all_time %>%
+alltime_FEMA_byState <- all_FEMA_decs %>%
   group_by(state) %>% 
   count() %>% 
   arrange(desc(n))
 
 alltime_FEMA_byState
 ```
+Since the database was created in 1963, the following 10 states have had the 
+most FEMA natural disaster emergency declarations called (as of `r Sys.Date()`):
+
+CA, TX, OK, WA, FL, OR, NY, AZ, LA, NM
+
+---
+
+`recent_FEMA_byState` contains the number of FEMA declarations for every US 
+state and territory from the last 5 years.
 
 ```{r recent_FEMA_Decs_by_State, echo=FALSE}
 recent_FEMA_byState <- all_FEMA_decs %>%
@@ -126,15 +138,17 @@ recent_FEMA_byState <- all_FEMA_decs %>%
 
 recent_FEMA_byState
 ```
-Since `r date_5y` [as of `r Sys.Date()`], the following 10 states have had the 
+From `r date_5y` to `r Sys.Date()`, the following 10 states have had the 
 most FEMA natural disaster emergency declarations called:
 
 CA, WA, OR, OK, FL, TX, NV, AZ, LA, MS
 
+---
+
 ```{r small_FEMA_df, echo=FALSE}
 
 n_states <- 10
-top_states <- state_FEMA_decs_total[["state"]][1:n_states]
+top_states <- recent_FEMA_byState[["state"]][1:n_states]
 
 date_5y <- Sys.Date() - 365.25*5
 
@@ -153,7 +167,7 @@ small_FEMA <- FEMA_Declarations %>%
          incident_end_day
          )
 #%>% filter(designated_area == "Statewide")
-small_FEMA
+#small_FEMA
 ```
 
 ### Data set for climate change Google searches by day:
@@ -202,6 +216,8 @@ FL_Hurricanes
 # set parameters for FL_Hurricanes query below
 num_days <- 14
 State_Disaster <- FL_Hurricanes
+location <- "US-FL"
+search_term <- "climate change"
 
 # vectorize events & dates
 events <- as.vector(State_Disaster$declaration_title)
@@ -218,8 +234,9 @@ for (i in 1:length(events)) {
   comb_time <- paste(start_date, end_date)
 
   # execute gtrends query for keyword = list_of_weather_events[i]
-  event_trend <- gtrends(keyword = events[i],
-                     geo = "US", time = comb_time)
+  #
+  event_trend <- gtrends(keyword = search_term, #events[i]
+                     geo = location, time = comb_time)
   
   # weather_event_gtrends[1] object tracks interest_over_time
   all_time_interest <- as.data.frame(event_trend[1])
@@ -290,7 +307,10 @@ CA_Fires
 ```{r CA_Fires-query}
 
 # set parameters for CA_Fires query below
+num_days <- 14
 State_Disaster <- CA_Fires
+location <- "US-CA"
+search_term <- "climate change"
 
 # vectorize events & dates
 events <- as.vector(State_Disaster$declaration_title)
@@ -307,8 +327,8 @@ for (i in 1:length(events)) {
   comb_time <- paste(start_date, end_date)
 
   # execute gtrends query for keyword = list_of_weather_events[i]
-  event_trend <- gtrends(keyword = events[i],
-                     geo = "US", time = comb_time)
+  event_trend <- gtrends(keyword = search_term, #events[i]
+                     geo = location, time = comb_time)
   
   # weather_event_gtrends[1] object tracks interest_over_time
   all_time_interest <- as.data.frame(event_trend[1])
@@ -496,26 +516,6 @@ CA_fire_facet_plot
 ```
 
 
-```{r fire_interest_plot, echo=FALSE}
-
-fire_and_climate_change_search_terms <- c(
-  "thomas fire",
-  "august fire",
-  "mendocino fire",
-  "creek fire"
-)
-
-CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
-        geo = "CA") #time = "today+5-y" Last five years (default)
-
-CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
- 
-CA_fire_plot +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme(legend.position = "bottom")
-```
-
-
 ```{r Generalizable_Plotting_Function, echo=FALSE}
 ##
 plot.gtrends.silent <- function(x, ...) {
@@ -541,7 +541,6 @@ plot.gtrends.silent <- function(x, ...) {
 }
 ```
 Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
-
 
 ```{r single_hit_yaxis_interest_plot, echo=FALSE}
 
