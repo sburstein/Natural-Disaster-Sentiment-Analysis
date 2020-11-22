@@ -477,6 +477,18 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
 
 *1) Do Google search patterns correlate with real-world events?*
 
+Causality between what happens in the real-world and Google search trends is a 
+prerequisite for subsequent analysis. While it may seem intuitive, it is worth 
+explaining the mechanisms by which society and events express themselves in the 
+information age. A new adaptation of the proverbial question "Does a tree really 
+fall in the woods if no one is around to hear it?" may be "Do current events 
+ever occur without being search for on the internet?". According to existing 
+social science research - the short answer is no.
+The use of Google's search engine is so ingrained in the United States and 
+global cultures, that it is the internet which aggregates and disseminates 
+the vast majority of information humans use to interpret the world around them.
+
+
 
 *2) Does interest in climate change increase regionally after the occurrence of 
 a natural disaster?*
