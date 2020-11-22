@@ -484,15 +484,33 @@ information age. A new adaptation of the proverbial question "Does a tree really
 fall in the woods if no one is around to hear it?" may be "Do current events 
 ever occur without being search for on the internet?". According to existing 
 social science research - the short answer is no.
+
 The use of Google's search engine is so ingrained in the United States and 
 global cultures, that it is the internet which aggregates and disseminates 
 the vast majority of information humans use to interpret the world around them.
 
 
-
 *2) Does interest in climate change increase regionally after the occurrence of 
 a natural disaster?*
 
+By virtue of research question 1, it is reasonable to assume a relationship 
+between natural disasters - physical events that shape critical aspects of the
+human experience - and Google search trends for these events. When FEMA declares 
+an emergency, for a hurricane, wildfire, flood, tornado or other event, people 
+who reside in the affected region want to know what is going on. This includes 
+searching the internet for more information about the nature of the emergency, 
+advice regarding how to protect their families and property, what to expect, and 
+how to prepare. The Google trends hits value associated with the disastr's name 
+thus fluctuates dramatically in the days leading up to, during, and after a 
+natural disaster impacts a community.
+
+hits - a numeric integer between 0 and 100 representing search volume as a 
+proportion of the maximum search volume for the specified keyword within the 
+given time and location bounds. It is worth noting that every Google trends ` will *always*
+
+The next logical question to pose - at least from the perspective of this 
+analysis - is whether or not humans have a tendency to search for topics like 
+climate change 
 
 *3) Do people become more environmentally conscious, and modify their Google 
 search behavior after a natural disaster?*
