@@ -77,6 +77,9 @@ The data set at large contains FEMA declarations from 1963 through the present.
 # Start year to filter events (only show FEMA decs. since specified year)
 date_5y <- Sys.Date() - 365.25*5
 
+# Number of days after a natural disaster to query "topic" interest for in state
+num_days <- 14
+
 # Study 1:
 #state1 <- 
 #event_type1 <-
@@ -98,6 +101,87 @@ FEMA_Declarations <- FEMA_Declarations %>%
   mutate(declaration_day = gsub( " .*$", "", declaration_date ))
 ```
 
+```{r FEMA_Decs_by_State, echo=FALSE}
+all_FEMA_decs <- FEMA_Declarations %>% 
+  group_by(state, declaration_day) %>% 
+  count() %>% 
+  ungroup()
+```
+
+```{r all_FEMA_Declarations_by_State, echo=FALSE}
+alltime_FEMA_byState <- all_time %>%
+  group_by(state) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+alltime_FEMA_byState
+```
+
+```{r recent_FEMA_Decs_by_State, echo=FALSE}
+recent_FEMA_byState <- all_FEMA_decs %>%
+  filter(declaration_day >= date_5y) %>% 
+  group_by(state) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+recent_FEMA_byState
+```
+Since `r date_5y` [as of `r Sys.Date()`], the following 10 states have had the 
+most FEMA natural disaster emergency declarations called:
+
+CA, WA, OR, OK, FL, TX, NV, AZ, LA, MS
+
+```{r small_FEMA_df, echo=FALSE}
+
+n_states <- 10
+top_states <- state_FEMA_decs_total[["state"]][1:n_states]
+
+date_5y <- Sys.Date() - 365.25*5
+
+small_FEMA <- FEMA_Declarations %>% 
+  subset(state %in% top_states) %>%
+  mutate(incident_begin_day = gsub( " .*$", "", incident_begin_date ),
+            incident_end_day = gsub( " .*$", "", incident_end_date ) ) %>% 
+  filter(declaration_day >= date_5y) %>% 
+  select(declaration_day, 
+         state, 
+         designated_area,
+         declaration_type,
+         incident_type, 
+         declaration_title, 
+         incident_begin_day, 
+         incident_end_day
+         )
+#%>% filter(designated_area == "Statewide")
+small_FEMA
+```
+
+### Data set for climate change Google searches by day:
+
+```{r climate_change_interest_by_state, echo=FALSE}
+search_terms <- c(
+"climate change"
+)
+
+climate_trends <- gtrends(keyword = search_terms,
+        geo = "US", #change to FL
+        time = "today 12-m")
+
+location_df <- data.frame(climate_trends[["interest_by_region"]][["location"]])
+hits_df <- data.frame(climate_trends[["interest_by_region"]][["hits"]])
+
+names(location_df) <- "location"
+names(hits_df) <- "hits"
+
+climate_location_hits_table <- cbind(location_df$location, hits_df$hits)
+
+climate_location_hits_table <- data.frame(climate_location_hits_table)
+
+names(climate_location_hits_table)[1] <- "location"
+names(climate_location_hits_table)[2] <- "hits"
+
+climate_location_hits_table
+```
 
 ## Florida Hurricanes since `r date_5y`
 
@@ -177,11 +261,7 @@ hits_df <- relative_date_mod %>%
 #n_vec <- as.vector(1:num_subsequent_days+1) 
 #row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1], df[2], df[3], df[4], df[5], 
-                  df[6], df[7], df[8], df[9], df[10], 
-                  df[11], df[12], df[13], df[14], df[15]
-                  )
-         )
+  return(coalesce(df[1 : num_days]))
 }
 
 hits_df %>%
@@ -189,6 +269,7 @@ hits_df %>%
   summarise_all(coalesce_by_column)
 
 FLHurr_output_df <- hits_df
+FLHurr_output_df
 ```
 `coalesce_by_column` function [description and source](https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row)
 
@@ -209,7 +290,6 @@ CA_Fires
 ```{r CA_Fires-query}
 
 # set parameters for CA_Fires query below
-num_days <- 14
 State_Disaster <- CA_Fires
 
 # vectorize events & dates
@@ -270,11 +350,7 @@ hits_df <- relative_date_mod %>%
 #n_vec <- as.vector(1:num_subsequent_days+1) 
 #row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1], df[2], df[3], df[4], df[5], 
-                  df[6], df[7], df[8], df[9], df[10], 
-                  df[11], df[12], df[13], df[14], df[15]
-                  )
-         )
+  return(coalesce(df[1 : num_days]))
 }
 
 hits_df %>%
@@ -298,39 +374,13 @@ search behavior after a natural disaster?*
 
 # Initial Analysis
 
-```{r gtrends_function, echo=FALSE}
-
-list_of_weather_events <- c("camp fire",
-                            "hurricane")
-
-finaldata <- as.data.frame(NULL)
-for (i in 1:length(list_of_weather_events)) {
-  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
-                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event. Use Lubridate
-  all_states_interest <- as.data.frame(weather_event_gtrends[3])
-  finaldata <- rbind(finaldata, all_states_interest)
-  print(i)
-  Sys.sleep(5)
-}
-
-#finaldata
-
-
-climate_change_trend <- gtrends(keyword = "climate change",
-                   geo = "US" #change location
-                   ) 
-
-#climate_change_trend[1]$interest_over_time
-```
-
 Visualizations, such as the faceted line plots below help illustrate important 
 trends in sentiment towards climate change and associated topics. For example, 
 interest in climate change, global warming, and the green new deal topics all 
 spiked during the 2020 election season, as climate change became an important 
 topic in the Presidential race.
 
-```{r US_climate_change viz, echo=FALSE}
-
+```{r US_climate_change-top4-query, echo=FALSE}
 climate_search_terms <- c(
 "climate change",		
 "global warming",		
@@ -339,31 +389,34 @@ climate_search_terms <- c(
 )
 
 climate_change_gtrends <- gtrends(keyword = climate_search_terms,
-        geo = "US", #change to state?
+        geo = "US",
         time = "today 12-m") 
-#%>% summary()
 
 climate_change_gtrends[1]$interest_over_time
 
 US_climate_interest <- climate_change_gtrends %>% 
           .$interest_over_time %>% #not working
           glimpse()
+```
+
+
+```{r US_climate_change-viz, echo=FALSE}
 
  climate_change_facet_plot <- US_climate_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
   # Begin ggplot
   ggplot(aes(x = date, y = hits)) +
-  #geom_vline(xintercept = 1.59e+09) + #determine key dates in correct format
   geom_line(colour = "darkblue", size = 1.5) +
   facet_wrap(~keyword) +
   ggthemes::theme_economist()
- #+ annotate()
+
 climate_change_facet_plot
 ```
 [Technical Resource Cited](https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/)
 
-```{r US_Hurricane_Interest, echo=FALSE}
+```{r FL_hurricane-top4-query, echo=FALSE}
+
 search_terms <- c(
 "Hurricane Michael",		
 "Hurricane Dorian",		
@@ -372,12 +425,10 @@ search_terms <- c(
 )
 
 output_results <- gtrends(keyword = search_terms,
-        geo = "US", #change to FL
+        geo = "US-FL",
         time = "today 12-m") 
-#%>% summary()
 
 output_results[1]$interest_over_time
-
 
 FL_hurr_interest <- output_results %>% 
           .$interest_over_time %>% #not working
@@ -400,7 +451,7 @@ reasonable to assume that people do become more interested in past natural
 disasters in order to contextualize the events that they are currently 
 experiencing.
 
-```{r FL_hurricane viz, echo=FALSE}
+```{r FL_hurricane-top4-viz, echo=FALSE}
  FL_hurr_plot <- FL_hurr_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
@@ -412,15 +463,15 @@ experiencing.
 FL_hurr_plot
 ```
 
-```{r top_4_fires, echo=FALSE}
-CA__top4_fires <- c(
+```{r CA_fire-top4-query, echo=FALSE}
+CA_top4_fires <- c(
 "bobcat fire",		
 "august fire",		
 "creek fire",		
 "bear fire"
 )
 
-CA_top_fire_trends <- gtrends(keyword = CA__top4_fires,
+CA_top_fire_trends <- gtrends(keyword = CA_top4_fires,
         geo = "US",
         time = "today 12-m") #%>% summary()
 
@@ -432,7 +483,7 @@ CA_fire_interest <- CA_top_fire_trends %>%
 #CA_fire_interest[1]$interest_over_time
 ```
 
-```{r CA_fire viz, echo=FALSE}
+```{r CA_fire-top4-viz, echo=FALSE}
  CA_fire_facet_plot <- CA_fire_interest %>% 
   mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
   mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
@@ -445,7 +496,7 @@ CA_fire_facet_plot
 ```
 
 
-```{r single_hit_yaxis_interest_plot, echo=FALSE}
+```{r fire_interest_plot, echo=FALSE}
 
 fire_and_climate_change_search_terms <- c(
   "thomas fire",
@@ -465,7 +516,8 @@ CA_fire_plot +
 ```
 
 
-```{r Generalizable plotting function, echo=FALSE}
+```{r Generalizable_Plotting_Function, echo=FALSE}
+##
 plot.gtrends.silent <- function(x, ...) {
   df <- x$interest_over_time
   df$date <- as.Date(df$date)
@@ -480,7 +532,7 @@ plot.gtrends.silent <- function(x, ...) {
   p <- ggplot(df, aes_string(x = "date", y = "hits", color = "legend")) +
     geom_line() +
     xlab("Date") +
-    ylab("Search hits") +
+    ylab("Search Hits") +
     ggtitle("Interest over time") +
     theme_bw() +
     theme(legend.title = element_blank())
@@ -547,87 +599,6 @@ ggplot(data = graph_df) +
   #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   theme_minimal() + 
   theme(legend.position = 'bottom')
-```
-
-```{r state_date declaration count, echo=FALSE}
-state_date_FEMA_decs <- FEMA_Declarations %>% 
-  group_by(state, declaration_day) %>% 
-  count()
-```
-
-```{r state declarations count since date, echo=FALSE}
-
-state_FEMA_decs_total <- state_date_FEMA_decs %>%
-  filter(declaration_day >= date_5y) %>% 
-  group_by(state) %>% 
-  count() %>% 
-  arrange(desc(n))
-
-state_FEMA_decs_total
-```
-Since `r date_5y` [as of 2020-11-19], the following 10 states have had the most FEMA 
-natural disaster emergency declarations called:
-
-CA, WA, OR, OK, FL, TX, NV, AZ, LA, MS
-
-### Data set for climate change Google searches by day:
-
-```{r climate_change_interest_by_state, echo=FALSE}
-search_terms <- c(
-"climate change"
-)
-
-climate_trends <- gtrends(keyword = search_terms,
-        geo = "US", #change to FL
-        time = "today 12-m")
-
-location_df <- data.frame(climate_trends[["interest_by_region"]][["location"]])
-hits_df <- data.frame(climate_trends[["interest_by_region"]][["hits"]])
-
-names(location_df) <- "location"
-names(hits_df) <- "hits"
-
-climate_location_hits_table <- cbind(location_df$location, hits_df$hits)
-
-climate_location_hits_table <- data.frame(climate_location_hits_table)
-
-names(climate_location_hits_table)[1] <- "location"
-names(climate_location_hits_table)[2] <- "hits"
-
-#climate_location_hits_table
-```
-
-```{r top_states_function, echo=FALSE}
-#show(climate_trends)
-
-n_states <- 10
-top_states <- state_FEMA_decs_total[["state"]][1:n_states]
-
-date_5y <- Sys.Date() - 365.25*5
-
-small_FEMA_table <- FEMA_Declarations %>% 
-  subset(state %in% top_states) %>%
-  mutate(incident_begin_day = gsub( " .*$", "", incident_begin_date ),
-            incident_end_day = gsub( " .*$", "", incident_end_date ) ) %>% 
-  filter(declaration_day >= date_5y) %>% 
-  select(declaration_day, 
-         state, 
-         designated_area,
-         declaration_type,
-         incident_type, 
-         declaration_title, 
-         incident_begin_day, 
-         incident_end_day
-         )
-small_FEMA_table
-#%>% filter(designated_area == "Statewide")
-  
-  
-
-for (state in top_states) {
-  
-}
-
 ```
 # Bibliography
 
