@@ -16,18 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load the Libraries and Datasets
 
-### README
-
-See README for more thorough description of both `FEMA_Declarations` and 
-`M5_Subset` data sets, with content summary, column variable descriptions, 
-acknowledgments, source description and licensing information.
-
-### Primary Data Source
-
-[Kaggle Natural Disaster Data set](https://www.kaggle.com/headsortails/us-natural-disaster-declarations). The 
-`FEMA_Declarations` data set is used for the bulk of this analysis and is also 
-integrated with Google Trends data.
-
 ### Google Trends Package
 
 [gtrendsR CRAN Package](https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf) 
@@ -40,8 +28,7 @@ available through [CRAN (The Comprehensive R Archive Network)](https://cran.r-pr
 Google trends data for specified search queries is represented by a `hits` variable, which expresses the relative volume of Google searches for specific 
 terms over geographical and time parameters.
 
-```{r load_packages&data, message=FALSE}
-
+```{r load_packages, message = FALSE}
 #---PACKAGES------  > remove "#" if package not previously installed
 #install.packages("tidyverse")
 library(tidyverse)
@@ -53,13 +40,24 @@ library(ggthemes)
 library(maps)
 #install.packages("lubridate")
 library(lubridate)
+```
 
+### README
 
+See README for more thorough description of the `FEMA_Declarations` data set, 
+with content summary, column variable descriptions, 
+acknowledgments, source description and licensing information.
+
+### Primary Data Source
+
+[Kaggle Natural Disaster Data set](https://www.kaggle.com/headsortails/us-natural-disaster-declarations). The 
+`FEMA_Declarations` data set is used for the bulk of this analysis and is also 
+integrated with Google Trends data.
+
+```{r load_data, message = FALSE}
 #---DATA--------- > remove "#" to view raw data
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 #view(FEMA_Declarations)
-M5_Subset <- read_csv("FEMA_data/us_disasters_m5.csv")
-#view(M5_Subset)
 ```
 <br/><br/>
 
@@ -93,7 +91,7 @@ The date 5 years before, which is the starting time bound for subsequent Google
 Trends queries shown below: 
 Variable `date_5y` is `r date_5y`.
 
-```{r}
+```{r clean_date}
 FEMA_Declarations <- FEMA_Declarations %>% 
   mutate(declaration_day = gsub( " .*$", "", declaration_date ))
 ```
@@ -104,7 +102,7 @@ FEMA_Declarations <- FEMA_Declarations %>%
 A list of all FEMA declarations for hurricanes in Florida occurring in the last 
 5 years.
 
-```{r FL_Hurricanes_df, echo=FALSE}
+```{r FL_Hurricanes-events, echo=FALSE}
 FL_Hurricanes <- FEMA_Declarations %>% 
   filter(incident_type == "Hurricane", incident_begin_date >= date_5y, state == "FL") %>% 
   select(declaration_title, declaration_day) %>% 
@@ -113,153 +111,152 @@ FL_Hurricanes <- FEMA_Declarations %>%
 FL_Hurricanes
 ```
 
-```{r}
+```{r FL_Hurricanes-initialize}
+num_days <- 14
+State_Disaster <- FL_Hurricanes
+```
 
-num_subsequent_days <- 14
+```{r FL_Hurricanes-query}
 
-list_of_weather_events <- as.vector(FL_Hurricanes$declaration_title)
-list_of_weather_dates <- as.vector(FL_Hurricanes$declaration_day)
+events <- as.vector(State_Disaster$declaration_title)
+dates <- as.vector(State_Disaster$declaration_day)
 
+# initialize empty data frame
 finaldata <- as.data.frame(NULL)
-for (i in 1:length(list_of_weather_events)) {
+# for loop iterates over all events in events vector
+for (i in 1:length(events)) {
   
-  start_date <- ymd(list_of_weather_dates[i])
-
-  end_date <- ymd(list_of_weather_dates[i]) + num_subsequent_days
-
+  # create comb_time time boundaries for gtrends query
+  start_date <- ymd(dates[i])
+  end_date <- ymd(dates[i]) + num_days
   comb_time <- paste(start_date, end_date)
 
-  
-  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
+  # execute gtrends query for keyword = list_of_weather_events[i]
+  event_trend <- gtrends(keyword = events[i],
                      geo = "US", time = comb_time)
   
   # weather_event_gtrends[1] object tracks interest_over_time
-  all_time_interest <- as.data.frame(weather_event_gtrends[1])
+  all_time_interest <- as.data.frame(event_trend[1])
   finaldata <- rbind(finaldata, all_time_interest)
   print(i)
   Sys.sleep(5)
 }
+
 finaldata
 ```
 
-```{r}
+```{r FL_Hurricanes-hits-df}
+x <- finaldata %>%
+  mutate(event_date = gsub( " .*$", "", interest_over_time.time ),
+         hits_date = gsub( " .*$", "", interest_over_time.date )
+         )
+  
+x <- x %>% 
+  mutate(event_date = as.Date(event_date),
+         hits_date = as.Date(hits_date),
+         keyword = interest_over_time.keyword,
+         hits = interest_over_time.hits) %>% 
+  select(event_date, keyword, hits_date, hits) 
 
-a <- finaldata %>%
-      mutate(event_date = as.Date(event_date),
-             hits_date = as.Date(hits_date)) %>% 
-      select(event_date, keyword, hits_date, hits)
-a
-
-relative_date_mod <- a %>% 
+relative_date_mod <- x %>% 
   mutate(rel_date = hits_date - event_date)
-relative_date_mod
 
-x <- relative_date_mod %>% 
+
+hits_df <- relative_date_mod %>% 
   pivot_wider(names_from = rel_date, values_from = hits)
-x
 
-n_vec <- as.vector(0:num_subsequent_days) 
+#n_vec <- as.vector(1:num_subsequent_days+1) 
+#row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], df[10], df[11], df[12], df[13], df[14], df[15]))
+  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], 
+                  df[10], df[11], df[12], df[13], df[14], df[15]))
 }
 
-x %>%
+hits_df %>%
   group_by(keyword) %>%
   summarise_all(coalesce_by_column)
 ```
-
-
-
-```{r}
-
-n_vec <- as.vector(0:num_subsequent_days) 
-
-for (row in nrow(x)) {
-  for (n in n_vec) {
-    if (n != 0) {
-      x[row] = x
-    }
-    
-  }
-}
-
-y <- x %>%
-  group_by(keyword) %>%
-  summarise_if(
-    is.numeric,
-    sum,
-    #na.rm = TRUE
-  )
-y
-
-a <- finaldata %>% 
-      mutate(event_date = gsub( " .*$", "", interest_over_time.time),
-             hits_date = interest_over_time.date,
-             hits = interest_over_time.hits,
-             keyword = interest_over_time.keyword) %>% 
-      select(event_date, keyword, hits_date, hits)
-a
-
-finaldata <- finaldata %>% 
-  mutate(event_date = gsub( " .*$", "", interest_over_time.time),
-         hits_date = interest_over_time.date,
-         hits = interest_over_time.hits,
-         keyword = interest_over_time.keyword) %>% 
-  select(event_date, keyword, hits_date, hits) %>% #event_date, 
-  pivot_wider(names_from = hits_date, values_from = hits)
-
-finaldata
-
-for (i in 1:length(list_of_weather_events)) {
-  weather_event_gtrends[]$
-  
-}
-
-start_date <- "2015-11-25"
-start_date <- ymd(start_date)
-start_date
-end_date <- start_date + 14
-end_date
-comb_time <- paste(start_date, end_date)
-comb_time
-
-test <- start_date - end_date
-test
-```
-
+`coalesce_by_column` function [description and source](https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row)
 
 ## California Wildfires since `r date_5y`
 
 A list of all FEMA declarations for wildfires in California occurring in the 
 last 5 years.
 
-```{r CA_Fires_df, echo=FALSE}
+```{r CA_Fires-events, echo=FALSE}
 CA_Fires <- FEMA_Declarations %>% 
   filter(incident_type == "Fire", incident_begin_date >= date_5y, state == "CA") %>% 
   select(declaration_title, declaration_day) %>% 
-  distinct()
+  distinct(declaration_title, .keep_all = TRUE)
   
-CA_Fires  
+CA_Fires
 ```
 
-```{r}
+```{r CA_Fires-initialize}
+num_days <- 14
+State_Disaster <- CA_Fires
+```
 
-list_of_weather_events <- as.vector(CA_Fires$declaration_title)
+```{r CA_Fires-query}
 
+events <- as.vector(State_Disaster$declaration_title)
+dates <- as.vector(State_Disaster$declaration_day)
+
+# initialize empty data frame
 finaldata <- as.data.frame(NULL)
-for (i in 1:length(list_of_weather_events)) {
-  weather_event_gtrends <- gtrends(keyword = list_of_weather_events[i],
-                     geo = "US") #add date parameter time = "today 12-m" --> find date from original file of event. Use Lubridate
-  all_states_interest <- as.data.frame(weather_event_gtrends[3])
-  finaldata <- rbind(finaldata, all_states_interest)
+# for loop iterates over all events in events vector
+for (i in 1:length(events)) {
+  
+  # create comb_time time boundaries for gtrends query
+  start_date <- ymd(dates[i])
+  end_date <- ymd(dates[i]) + num_days
+  comb_time <- paste(start_date, end_date)
+
+  # execute gtrends query for keyword = list_of_weather_events[i]
+  event_trend <- gtrends(keyword = events[i],
+                     geo = "US", time = comb_time)
+  
+  # weather_event_gtrends[1] object tracks interest_over_time
+  all_time_interest <- as.data.frame(event_trend[1])
+  finaldata <- rbind(finaldata, all_time_interest)
   print(i)
   Sys.sleep(5)
 }
 
-climate_change_trend[1]$interest_over_time
-
+finaldata
 ```
 
+```{r CA_Fires-hits-df}
+x <- finaldata %>%
+  mutate(event_date = gsub( " .*$", "", interest_over_time.time ),
+         hits_date = gsub( " .*$", "", interest_over_time.date )
+         )
+  
+x <- x %>% 
+  mutate(event_date = as.Date(event_date),
+         hits_date = as.Date(hits_date),
+         keyword = interest_over_time.keyword,
+         hits = interest_over_time.hits) %>% 
+  select(event_date, keyword, hits_date, hits) 
+
+relative_date_mod <- x %>% 
+  mutate(rel_date = hits_date - event_date)
+
+
+hits_df <- relative_date_mod %>% 
+  pivot_wider(names_from = rel_date, values_from = hits)
+
+#n_vec <- as.vector(1:num_subsequent_days+1) 
+#row_list <- list(df[i] for (i in n_vec))
+coalesce_by_column <- function(df) {
+  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], 
+                  df[10], df[11], df[12], df[13], df[14], df[15]))
+}
+
+hits_df %>%
+  group_by(keyword) %>%
+  summarise_all(coalesce_by_column)
+```
 
 # Research Questions
 
