@@ -315,6 +315,25 @@ ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "right")
 ```
 
+```{r}
+#State_Disaster <- FL_Hurricanes
+# add a grouping variable (or many!)
+ FLHurr_slopes <- FLHurr_graph_df %>%
+  #mutate(group5 = rep(1:10, each = 5)) %>%
+  group_by(event_name) %>%
+  mutate(
+    slope = round(lm(hits ~ rel_date)$coefficients[2], 2),
+    significance = summary(lm(hits ~ rel_date))$coefficients[2, 4],
+    x = mean(rel_date),   # x coordinate for slope label
+    y = mean(hits)     # y coordinate for slope label
+  )
+FLHurr_slopes %>% 
+  select(event_name, event_date, slope, significance) %>% 
+  distinct()  %>%
+  filter(significance < .2)
+```
+
+
 ```{r FLHurr_CCMono-plot}
 ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits)) +
   geom_point() +
