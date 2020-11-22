@@ -82,6 +82,8 @@ date_5y <- Sys.Date() - 365.25*5
 #event_type1 <-
 
 # Study 2:
+#state2 <- 
+#event_type2 <-
 
 ```
 The date this file was last compiled: 
@@ -111,13 +113,13 @@ FL_Hurricanes <- FEMA_Declarations %>%
 FL_Hurricanes
 ```
 
-```{r FL_Hurricanes-initialize}
-num_days <- 14
-State_Disaster <- FL_Hurricanes
-```
-
 ```{r FL_Hurricanes-query}
 
+# set parameters for FL_Hurricanes query below
+num_days <- 14
+State_Disaster <- FL_Hurricanes
+
+# vectorize events & dates
 events <- as.vector(State_Disaster$declaration_title)
 dates <- as.vector(State_Disaster$declaration_day)
 
@@ -142,11 +144,18 @@ for (i in 1:length(events)) {
   Sys.sleep(5)
 }
 
-finaldata
+# set finaldata pointer to FLHurr_Hits (specific variable)
+FLHurr_Hits <- finaldata
+# view data frame
+FLHurr_Hits
 ```
 
 ```{r FL_Hurricanes-hits-df}
-x <- finaldata %>%
+
+# set df as FLHurr_Hits for subsequent df transformation
+df <- FLHurr_Hits
+
+x <- df %>%
   mutate(event_date = gsub( " .*$", "", interest_over_time.time ),
          hits_date = gsub( " .*$", "", interest_over_time.date )
          )
@@ -168,13 +177,18 @@ hits_df <- relative_date_mod %>%
 #n_vec <- as.vector(1:num_subsequent_days+1) 
 #row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], 
-                  df[10], df[11], df[12], df[13], df[14], df[15]))
+  return(coalesce(df[1], df[2], df[3], df[4], df[5], 
+                  df[6], df[7], df[8], df[9], df[10], 
+                  df[11], df[12], df[13], df[14], df[15]
+                  )
+         )
 }
 
 hits_df %>%
   group_by(keyword) %>%
   summarise_all(coalesce_by_column)
+
+FLHurr_output_df <- hits_df
 ```
 `coalesce_by_column` function [description and source](https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row)
 
@@ -192,13 +206,13 @@ CA_Fires <- FEMA_Declarations %>%
 CA_Fires
 ```
 
-```{r CA_Fires-initialize}
-num_days <- 14
-State_Disaster <- CA_Fires
-```
-
 ```{r CA_Fires-query}
 
+# set parameters for CA_Fires query below
+num_days <- 14
+State_Disaster <- CA_Fires
+
+# vectorize events & dates
 events <- as.vector(State_Disaster$declaration_title)
 dates <- as.vector(State_Disaster$declaration_day)
 
@@ -223,11 +237,18 @@ for (i in 1:length(events)) {
   Sys.sleep(5)
 }
 
-finaldata
+# set finaldata pointer to CAFire_Hits (specific variable)
+CAFire_Hits <- finaldata
+# view data frame
+CAFire_Hits
 ```
 
 ```{r CA_Fires-hits-df}
-x <- finaldata %>%
+
+# set df as CAFire_Hits for subsequent df transformation
+df <- CAFire_Hits
+
+x <- df %>%
   mutate(event_date = gsub( " .*$", "", interest_over_time.time ),
          hits_date = gsub( " .*$", "", interest_over_time.date )
          )
@@ -249,13 +270,18 @@ hits_df <- relative_date_mod %>%
 #n_vec <- as.vector(1:num_subsequent_days+1) 
 #row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1], df[2], df[3], df[4], df[5], df[6], df[7], df[8], df[9], 
-                  df[10], df[11], df[12], df[13], df[14], df[15]))
+  return(coalesce(df[1], df[2], df[3], df[4], df[5], 
+                  df[6], df[7], df[8], df[9], df[10], 
+                  df[11], df[12], df[13], df[14], df[15]
+                  )
+         )
 }
 
 hits_df %>%
   group_by(keyword) %>%
   summarise_all(coalesce_by_column)
+
+CAFire_output_df <- hits_df
 ```
 
 # Research Questions
@@ -365,9 +391,6 @@ Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and
 Southeastern United States in 2020. They were classified as Category 1 and 
 Category 2 storms respectively, leaving more than $10.0 billion USD of damage in
 their wakes.
-
-
-
 
 Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
 more than ripples (hits ≤ 5) for the entirety of this past year. Interestingly 
