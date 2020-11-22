@@ -315,6 +315,17 @@ ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "right")
 ```
 
+```{r FLHurr_CCMono-plot}
+ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "FL Hurricanes Affects on Climate Change Sentiment",
+       subtitle = "Google Trends after FEMA Declaration",
+       y = "Google Trends Hits Volume") +
+  scale_x_continuous("Number of Days after FEMA Declaration", labels = as.character(xticks), breaks = xticks) + 
+  theme_bw()
+```
+
 ## California Wildfires since `r date_5y`
 
 A list of all FEMA declarations for wildfires in California occurring in the 
@@ -430,6 +441,17 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "none")
 ```
 
+```{r CAFire_CCMono-plot}
+xticks <- 0:num_days
+ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "CA Fires Affects on Climate Change Sentiment",
+       subtitle = "Google Trends after FEMA Declaration",
+       y = "Google Trends Hits Volume") +
+  scale_x_continuous("Number of Days after FEMA Declaration", labels = as.character(xticks), breaks = xticks) + 
+  theme_bw()
+```
 
 
 # Research Questions
