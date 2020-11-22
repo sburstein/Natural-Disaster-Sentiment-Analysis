@@ -66,12 +66,15 @@ FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 ### Generalizable Parameters for Event Filter
 
 In order to produce research that is both reproducible and timely, certain 
-parameters can be initialized and instantiated once, and then referenced 
-multiple times later. 
+parameters can be initialized once, and then referenced multiple times later. 
 Since gTrendsR can easily return Google Trends information from the past five 
 years, it is intuitive to create a `date_5y` variable that can be used to filter 
 FEMA declarations by date, thus eliminating all those that occurred previously. 
 The data set at large contains FEMA declarations from 1963 through the present.
+Throughout this research there will also be many variables that reused. 
+In portions of the analysis that copy methods used elsewhere, the assignment 
+operator will be used to allow for minimal rewriting in the event that certain 
+functions are repurposed for other analysis later on.
 
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
@@ -79,16 +82,8 @@ date_5y <- Sys.Date() - 365.25*5
 
 # Number of days after a natural disaster to query "topic" interest for in state
 num_days <- 14
-
-# Study 1:
-#state1 <- 
-#event_type1 <-
-
-# Study 2:
-#state2 <- 
-#event_type2 <-
-
 ```
+
 The date this file was last compiled: 
 Current date (`Sys.Date`) is  `r Sys.Date()`.
 
@@ -223,8 +218,19 @@ search_term <- "climate change"
 events <- as.vector(State_Disaster$declaration_title)
 dates <- as.vector(State_Disaster$declaration_day)
 
+# create vector of length length(events)*num_days with event names for cbind()
+EventsVec <- vector()
+for (j in 1:length(events)) {
+  event <- events[j]
+  for(k in 1:(num_days+1)) {
+    EventsVec <- append(EventsVec, event)
+  }
+}
+
+
 # initialize empty data frame
 finaldata <- as.data.frame(NULL)
+
 # for loop iterates over all events in events vector
 for (i in 1:length(events)) {
   
@@ -241,9 +247,13 @@ for (i in 1:length(events)) {
   # weather_event_gtrends[1] object tracks interest_over_time
   all_time_interest <- as.data.frame(event_trend[1])
   finaldata <- rbind(finaldata, all_time_interest)
+
   print(i)
   Sys.sleep(5)
 }
+
+# column bind df with vector of natural disaster names (EventsVec)
+finaldata <- cbind(event_name=EventsVec, finaldata)
 
 # set finaldata pointer to FLHurr_Hits (specific variable)
 FLHurr_Hits <- finaldata
@@ -255,6 +265,7 @@ FLHurr_Hits
 
 # set df as FLHurr_Hits for subsequent df transformation
 df <- FLHurr_Hits
+num_days <- 14
 
 x <- df %>%
   mutate(event_date = gsub( " .*$", "", interest_over_time.time ),
@@ -266,29 +277,43 @@ x <- x %>%
          hits_date = as.Date(hits_date),
          keyword = interest_over_time.keyword,
          hits = interest_over_time.hits) %>% 
-  select(event_date, keyword, hits_date, hits) 
+  select(event_name, event_date, keyword, hits_date, hits) 
 
 relative_date_mod <- x %>% 
   mutate(rel_date = hits_date - event_date)
 
+# ggplot ready df (pivot_longer effectively done)
+FLHurr_graph_df <- relative_date_mod
+```
 
+# method to get 1 row for each event
 hits_df <- relative_date_mod %>% 
   pivot_wider(names_from = rel_date, values_from = hits)
 
-#n_vec <- as.vector(1:num_subsequent_days+1) 
-#row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
-  return(coalesce(df[1 : num_days]))
+  return(coalesce(df[1:(num_days)]))
 }
 
 hits_df %>%
-  group_by(keyword) %>%
+  group_by(event_name) %>% #event_name
   summarise_all(coalesce_by_column)
 
 FLHurr_output_df <- hits_df
 FLHurr_output_df
-```
+
 `coalesce_by_column` function [description and source](https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row)
+
+```{r FLHurr_CCInterest-plot}
+ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "FL Hurricanes Affects on Climate Change Sentiment",
+       subtitle = "Google Trends after FEMA Declaration",
+       x = "Number of Days after FEMA Declaration",
+       y = "Google Trends Hits Volume",
+       color = "Natural Disaster") +
+  theme(legend.position = "right")
+```
 
 ## California Wildfires since `r date_5y`
 
@@ -316,6 +341,15 @@ search_term <- "climate change"
 events <- as.vector(State_Disaster$declaration_title)
 dates <- as.vector(State_Disaster$declaration_day)
 
+# create vector of length length(events)*num_days with event names for cbind()
+EventsVec <- vector()
+for (j in 1:length(events)) {
+  event <- events[j]
+  for(k in 1:(num_days+1)) {
+    EventsVec <- append(EventsVec, event)
+  }
+}
+
 # initialize empty data frame
 finaldata <- as.data.frame(NULL)
 # for loop iterates over all events in events vector
@@ -336,6 +370,9 @@ for (i in 1:length(events)) {
   print(i)
   Sys.sleep(5)
 }
+
+# column bind df with vector of natural disaster names (EventsVec)
+finaldata <- cbind(event_name=EventsVec, finaldata)
 
 # set finaldata pointer to CAFire_Hits (specific variable)
 CAFire_Hits <- finaldata
@@ -358,17 +395,20 @@ x <- x %>%
          hits_date = as.Date(hits_date),
          keyword = interest_over_time.keyword,
          hits = interest_over_time.hits) %>% 
-  select(event_date, keyword, hits_date, hits) 
+  select(event_name, event_date, keyword, hits_date, hits) 
 
 relative_date_mod <- x %>% 
   mutate(rel_date = hits_date - event_date)
 
+# ggplot ready df (pivot_longer effectively done)
+CAFire_graph_df <- relative_date_mod
+```
 
+
+##TAKEOUT
 hits_df <- relative_date_mod %>% 
   pivot_wider(names_from = rel_date, values_from = hits)
 
-#n_vec <- as.vector(1:num_subsequent_days+1) 
-#row_list <- list(df[i] for (i in n_vec))
 coalesce_by_column <- function(df) {
   return(coalesce(df[1 : num_days]))
 }
@@ -376,9 +416,21 @@ coalesce_by_column <- function(df) {
 hits_df %>%
   group_by(keyword) %>%
   summarise_all(coalesce_by_column)
-
+  
 CAFire_output_df <- hits_df
+
+```{r CAFire_CCInterest-plot}
+ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
+  geom_point(show.legend = FALSE) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "CA Fires Affects on Climate Change Sentiment",
+       subtitle = "Google Trends after FEMA Declaration",
+       x = "Number of Days after FEMA Declaration",
+       y = "Google Trends Hits Volume") +
+  theme(legend.position = "none")
 ```
+
+
 
 # Research Questions
 
@@ -540,6 +592,7 @@ plot.gtrends.silent <- function(x, ...) {
   invisible(p)
 }
 ```
+
 Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
 
 ```{r single_hit_yaxis_interest_plot, echo=FALSE}
@@ -559,6 +612,7 @@ CA_fire_plot +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   theme(legend.position = "bottom")
 ```
+
 Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
 
 ```{r relative_yaxis_hit_plot, echo=FALSE}
@@ -599,6 +653,7 @@ ggplot(data = graph_df) +
   theme_minimal() + 
   theme(legend.position = 'bottom')
 ```
+
 # Bibliography
 
 ## Existing Scholarship on Climate Change Sentiment Analysis
