@@ -910,6 +910,7 @@ grouping by event, as the mean of all the slopes is an even more meaningful
 indicator of patterns in human behavior across different natural disasters.
 
 ```{r FLHurr_CCMono-plot, echo = FALSE, warning=FALSE, message=FALSE}
+xticks <- 0:num_days
 ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
