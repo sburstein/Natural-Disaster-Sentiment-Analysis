@@ -1121,7 +1121,7 @@ Next, it is possible to conduct a t-test to determine a p-value for the null
 hypothesis that the change in climate change hits immediately after a fire 
 disaster will not change.
 
-```{r FLHurr_CC-ttest, echo = FALSE}
+```{r CAFire_CC-ttest, echo = FALSE}
 t.test(fire_slopes_output$slope,mu=0)
 ```
 
