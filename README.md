@@ -3,20 +3,27 @@
 
 ### Context 
 
-The United States experience a large variety of natural disasters each year: devastating hurricanes, seasonal tornadoes, and scorching wild fires are among the events that endanger many lifes and cause billions of dollars in damages. The Federal Emergency Management Agency ([FEMA](https://www.fema.gov/)) is in charge of [\"helping people before, during, and after disasters\"](https://www.fema.gov/about-agency) by coordinating disaster response and providing relief funds ([see also wikipedia](https://en.wikipedia.org/wiki/Federal_Emergency_Management_Agency)). I will update this dataset regularly.
+The United States experience a large variety of natural disasters each year: devastating hurricanes, seasonal tornadoes, and scorching wild fires are among the events that endanger many lifes and cause billions of dollars in damages. The Federal Emergency Management Agency ([FEMA](https://www.fema.gov/)) is in charge of [\"helping people before, during, and after disasters\"](https://www.fema.gov/about-agency) by coordinating disaster response and providing relief funds ([see also wikipedia](https://en.wikipedia.org/wiki/Federal_Emergency_Management_Agency)). Original Kaggle developer will update the master dataset regularly.
 
 Note, that the data also includes biological disasters, in particular declarations made in response to the ongoing Covid-19 pandemic.
 
 ### Content
 
-This summary dataset is a high-level summary of all federally declared disasters since 1953. I downloaded it from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2) and applied a few simple data cleaning and formatting measures. The features of the main dataset will be described in detail right below. In addition, I provide a sub-dataset that is tailored to the parameters of the ongoing [M5 Forecasting competition](https://www.kaggle.com/c/m5-forecasting-accuracy); which is outlined below the main one. Some example for using the data in the M5 competition are given in my [EDA Kernel](https://www.kaggle.com/headsortails/back-to-predict-the-future-interactive-m5-eda).
+This summary dataset is a high-level summary of all federally declared disasters since 1953. It was downloaded from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2) and applied a few simple data cleaning and formatting measures. The features of the main dataset will be described in detail right below. 
+
+In addition, I provide a sub-dataset that is tailored to the parameters of the ongoing effort to forecast
+Google trends data in relation to climate catastrophe; which is outlined below the main one.
+Navigating climate tragedies in the near-term future is a likely reality 
+([see Deep Adaptation](https://mahb.stanford.edu/wp-content/uploads/2018/08/deepadaptation.pdf)).
 
 * `us_disaster_declarations.csv`: the full dataset with all rows and columns. The geographical resolution is the county level, with [FIPS codes](https://en.wikipedia.org/wiki/FIPS_county_code) being used to encode the counties. In addition to the fips and timing features, the data provides the type of disaster and also binary flags that indicate whether specific aid programs were triggered in response.
-- `us_disasters_m5.csv`: the M5-specific subset. Constrained to the 3 states CA, TX, and WI; as well as to the time range of Jan 2011 - June 2016. I also removed a few columns that I consider unnecessary for this more tailored analysis.
+- `us_disasters_m5.csv`: the M5-specific subset. Constrained to the 3 states CA, TX, and WI; as well as to the time range of Jan 2011 - June 2016. Original creator also removed a few columns that they considered unnecessary for more tailored analysis.
+- `small_FEMA_df`: Constrained data frame I made to analyze FEMA declarations from the most recent 5 years (tabulated when knit), in the top n states and territories that recorded the most natural disasters (FEMA declarations) during that time period.
+Can be modified to only view statewide emergencies, as opposed to also including regional and small-scale emergencies.
 
 ### Column Description
 
-Most of those descriptions have been taken verbatim from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2). I added small clarifications to some of them:
+Most of those descriptions have been taken verbatim from the [FEMA website](https://www.fema.gov/openfema-dataset-disaster-declarations-summaries-v2). Small clarifications have been added to some of them:
 
 Full dataset `us_disaster_declarations.csv`:
 
@@ -43,7 +50,7 @@ Full dataset `us_disaster_declarations.csv`:
 - `last_refresh`: Date the record was last updated by FEMA.
 - `id`: Unique ID assigned to the record. Those last 4 columns are primarily for bookkeeping.
 
-M5-specific dataset `us_disasters_m5.csv`:
+M5-specific dataset `us_disasters_m5.csv`: **[NOT USED FOR THIS ANALYSIS]**
 
 * `disaster_number`: Sequentially assigned number used to designate an event or incident declared as a disaster.
 - `state`: One of the three states \"CA\", \"TX\", or \"WI\".
