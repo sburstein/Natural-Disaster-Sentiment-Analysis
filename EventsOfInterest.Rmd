@@ -304,6 +304,10 @@ general public's sentiment towards climate change. This is likely a result of it
 being the most used term in news outlets and research when referring to global 
 changes in weather and the environment.
 
+An interesting property of Google Trends data, which will be proven, is that in
+addition to tracking human sentiment towards longstanding topics, like climate 
+change, it can also be used to detect one-time events
+
 ---
 
 # Research Question 1
@@ -322,41 +326,46 @@ The use of Google's search engine is so ingrained in the United States and
 global cultures, that it is the internet which aggregates and disseminates 
 the vast majority of information humans use to interpret the world around them.
 
-```{r FL_hurricane-top4-query, echo=FALSE}
+In order to illustrate the relationship between Google search patterns and 
+the occurrence of natural disasters, it is necessary to view differences in 
+interest over time for search queries pertaining to time-specific natural 
+disasters. 
+
+Each fall, from August through October, two of the most devastating weather 
+trends play out. Both of these phenomena lead to hundreds of deaths and billions
+of dollars in damages each year. A suitable method to track social interest in 
+these disasters (as they happen) is to plot interest in the disaster name as a 
+function of time. If there were to be a relationship, a clear spike in interest 
+for the keyword would appear at the time of the event.
+
+## Google Search Correlation with Florida Hurricane Events
+
+The first of these two weather trends is tropical storm formation in the 
+Atlantic, which ultimately leads to hurricanes in the southeastern United 
+States. As global temperatures rise, the prevalence and intensity of tropical 
+storm systems increase as well. Florida is subject to the most intense and 
+frequent of these hurricanes.  
+
+```{r FL_hurricane-top4-query, echo=FALSE, results="Hide"}
 
 search_terms <- c(
-"Hurricane Michael",		
-"Hurricane Dorian",		
-"Hurricane Isaias",		
-"Hurricane Sally"
+"hurricane michael",		
+"hurricane dorian",		
+"hurricane isaias",		
+"hurricane sally"
 )
 
-output_results <- gtrends(keyword = search_terms,
+FLHurr_gtrends <- gtrends(keyword = search_terms,
         geo = "US-FL",
-        time = "today 12-m") 
+        time = "today+5-y")  #default "today+5-y" otherwise "today 12-m"
 
-output_results[1]$interest_over_time
+#interest_over_time output can be seen here:
+#FLHurr_gtrends[1]$interest_over_time
 
-FL_hurr_interest <- output_results %>% 
-          .$interest_over_time %>% #not working
+FL_hurr_interest <- FLHurr_gtrends %>% 
+          .$interest_over_time %>% # working .$ by list subset
           glimpse()
 ```
-
-Another interesting property of Google Trends data is that in addition to 
-tracking human sentiment towards longstanding topics, like climate change, it 
-can also be used to detect one-time events, such as Hurricane Isaias and 
-Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and 
-Southeastern United States in 2020. They were classified as Category 1 and 
-Category 2 storms respectively, leaving more than $10.0 billion USD of damage in
-their wakes.
-
-Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
-more than ripples (hits ≤ 5) for the entirety of this past year. Interestingly 
-though, search hits for these terms also increased during the 2020 hurricane 
-season - around the time Google searches for active hurricanes spiked. It is 
-reasonable to assume that people do become more interested in past natural 
-disasters in order to contextualize the events that they are currently 
-experiencing.
 
 ```{r FL_hurricane-top4-viz, echo=FALSE}
  FL_hurr_plot <- FL_hurr_interest %>% 
@@ -370,9 +379,44 @@ experiencing.
 FL_hurr_plot
 ```
 
+It is thus verifiable that all of these events garnered peak interest on Google 
+at the precise date that they occurred. The spike in Google query hits is so 
+sharp, it seems as though human interest in these events is short-lived and 
+mostly isolated at the exact moment of their occurrence. This directly confirms 
+the hypothesis of research question 1: Google search volume for a natural 
+disaster peaks precisely at the event date.
 
+Hurricane Isaias and Hurricane Sally were two of the most devastating storms to
+hit the Gulf Coast and Southeastern United States in 2020. They were classified 
+as Category 1 and Category 2 storms respectively, leaving more than $10.0 
+billion USD of damage in their wakes.
 
-```{r CA_fire-top4-query, echo=FALSE}
+Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 were both 
+Category 5 storms, significantly more powerful and inflicting even more damage. 
+Hurricane Dorian is attributed to more than 100 deaths and $5.1 billion USD in 
+damage alone. Hurricane Michael caused 74 deaths and led to $25.5 billion USD in
+damage. 
+
+Google search interest for these category 5 hurricanes showed no more than 
+ripples (hits ≤ 5) for the entirety of this past year. This would be unlikely if
+it were the case that event interest on Google was not time dependent; 
+Hurricanes Dorian and Michael were significantly more consequential than 
+Hurricanes Isaias and Sally.
+
+When the data is analyzed carefully however, it is evident that even search hits
+for Hurricanes Dorian and Michael also increased fractionally during the 2020 
+hurricane season - around the time Google searches for active hurricanes spiked.
+It is perhaps the case that people do become more interested in past natural 
+disasters in order to contextualize the events that they are currently 
+experiencing.
+
+## Google Search Correlation with California Wildfire Events
+
+The second climate trend is increased temperatures in the western U.S., which 
+lead to brush and forest fires in California. In 2018 alone, more than 1,670,000 
+acres of land burned, California's most destructive wildfire season to date.
+
+```{r CA_fire-top4-query, echo=FALSE, results="Hide"}
 CA_top4_fires <- c(
 "bobcat fire",		
 "august fire",		
@@ -380,16 +424,16 @@ CA_top4_fires <- c(
 "bear fire"
 )
 
-CA_top_fire_trends <- gtrends(keyword = CA_top4_fires,
+CAFire_gtrends <- gtrends(keyword = CA_top4_fires,
         geo = "US",
-        time = "today 12-m") #%>% summary()
+        time = "today+5-y") #%>% summary()
 
+#interest_over_time output can be seen here:
+#CAFire_gtrends[1]$interest_over_time
 
-CA_fire_interest <- CA_top_fire_trends %>% 
+CA_fire_interest <- CAFire_gtrends %>% 
           .$interest_over_time %>% 
           glimpse()
-
-#CA_fire_interest[1]$interest_over_time
 ```
 
 ```{r CA_fire-top4-viz, echo=FALSE}
@@ -404,6 +448,43 @@ CA_fire_interest <- CA_top_fire_trends %>%
 CA_fire_facet_plot
 ```
 
+Like the Google trends output for Hurricanes in Florida, wildfires in California 
+show the same property of having peak interest on Google around the time of the 
+event itself.
+
+A key difference between wildfires in California and hurricanes in Florida is 
+that wildfires in California tend to have a much longer duration, often lasting 
+weeks. This is evident by the increased time periods of certain spikes in 
+interest, which is even more evident when the `gtrends()` query is performed on 
+a shorter duration (such as the past 1 year instead of 5 years). 
+
+Another notable feature of the line plots is that there appears to be multiple 
+time periods that return high hits values for a given query. For example, "creek
+fire" most notably refers to the largest wildfire in recent California history 
+that started on September 4th, 2020 and is still active at the date of 
+submission for this paper as of November 22nd, 2020. However, due to the naming 
+convention of California wildfires, it also returned Google "hits" values for 
+the Creek Fire of greater Los Angeles in 2017 and smaller, similarly named fires
+in 2018. This makes it harder to infer when the exact peak in interest for an 
+event occurred, as many of the keywords refer to multiple wildfires in recent 
+California history. 
+
+An additional example of noise in this search query can be seen in the 
+"august fire" graph, where, in addition to a peak at the start of the 2020 
+August Complex fire (August 16th, 2020), there are regular jumps visible each 
+year in the month of August. This is surely not a coincidence, but rather of 
+conflated search queries.
+
+The faceted line plot for interest over time for California wildfires still 
+confirms the hypothesis that Google search queries peak at the time of an event, 
+as this was still an observable pattern in the data. All four example plots 
+returned maximum hit values at days within the duration of each wildfire. 
+However, it does prove the need to tread carefully. Depending on the nature of 
+weather phenomena, or a weather phenomenon's naming convention, Google search 
+queries for associated terms may appear noisy or misleading. Additionally, it 
+becomes increasingly challenging to make claims like "local populations tend to/
+to not search for past natural disaster events in order to contextualize 
+impending events" as the data is more ambiguous.
 
 ```{r Generalizable_Plotting_Function, echo=FALSE}
 ##
@@ -511,7 +592,12 @@ natural disaster impacts a community.
 
 The next logical question to pose - at least from the perspective of this 
 analysis - is whether or not humans have a tendency to search for topics like 
-climate change 
+climate change after the occurrence of a local natural disaster. One of the most
+noticeable and consequential results of increased global warming is that extreme
+weather events, like storms, fires and floods, become more severe and can occur 
+more frequently. This is often used as a rallying-cry by climate activists. 
+Without timely action to minimize greenhouse gas emissions and protect our 
+natural resources, there will likely be irreversible damage to the planet. 
 
 ## Florida Hurricanes since `r date_5y`
 
