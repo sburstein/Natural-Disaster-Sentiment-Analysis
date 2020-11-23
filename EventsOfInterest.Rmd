@@ -29,9 +29,9 @@ Google trends data for specified search queries is represented by a `hits`
 variable, which expresses the relative volume of Google searches for specific 
 terms over geographical and time parameters.
 
-`hits` - a numeric integer between 0 and 100 representing search volume as a 
-proportion of the maximum search volume for the specified keyword within the 
-given time and location bounds. 
+`hits` - a numeric integer between 0 and 100 representing Google's weekly search
+volume as a proportion of the maximum search volume for the specified keyword 
+within the given time and location bounds. 
 It is worth noting that every Google trends query will *always* have at least 
 one interest_over_time `hits` value of 100 for a given query. 
 
@@ -52,8 +52,8 @@ library(lubridate)
 ### README
 
 See README for more thorough description of the `FEMA_Declarations` data set, 
-with content summary, column variable descriptions, 
-acknowledgments, source description and licensing information.
+with content summary, column variable descriptions, acknowledgments, source 
+description and licensing information.
 
 ### Primary Data Source
 
@@ -68,7 +68,12 @@ FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 ```
 <br/><br/>
 
-# Filter for Event Types
+For later analysis, the `small_FEMA` data frame can be used to parse FEMA 
+declarations that have occurred over the last 5 years in the states that have, 
+in those 5 years, recorded the most FEMA declarations. It is created after 
+`recent_FEMA_byState`.
+
+## Filter for Event Types
 
 ### Generalizable Parameters for Event Filter
 
@@ -77,11 +82,11 @@ parameters can be initialized once, and then referenced multiple times later.
 Since gTrendsR can easily return Google Trends information from the past five 
 years, it is intuitive to create a `date_5y` variable that can be used to filter 
 FEMA declarations by date, thus eliminating all those that occurred previously. 
-The data set at large contains FEMA declarations from 1963 through the present.
-Throughout this research there will also be many variables that reused. 
+The data set at large contains FEMA declarations from 1953 through the present.
+Throughout this research there will also be many variables that are reused. 
 In portions of the analysis that copy methods used elsewhere, the assignment 
-operator will be used to allow for minimal rewriting in the event that certain 
-functions are repurposed for other analysis later on.
+operator is used to allow for minimal rewriting in the event that certain 
+functions are purposed for further analysis in the future.
 
 ```{r initialized_parameters, echo=FALSE}
 # Start year to filter events (only show FEMA decs. since specified year)
@@ -91,42 +96,63 @@ date_5y <- Sys.Date() - 365.25*5
 num_days <- 14
 ```
 
-The date this file was last compiled: 
-Current date (`Sys.Date`) is  `r Sys.Date()`.
-
-The date 5 years before, which is the starting time bound for subsequent Google 
-Trends queries shown below: 
-Variable `date_5y` is `r date_5y`.
-
-```{r clean_date}
+```{r clean_date, echo=FALSE}
 FEMA_Declarations <- FEMA_Declarations %>% 
+  # clean date variable
   mutate(declaration_day = gsub( " .*$", "", declaration_date ))
 ```
 
+---
+
+# Research Questions Preview
+
+**(1)** Do Google search patterns correlate with real-world events?
+
+**(2)** Does interest in climate change increase regionally after the occurrence
+of a natural disaster?
+
+**(3)** Do people become more environmentally conscious, and modify their Google 
+search behavior after a natural disaster?*
+
+---
+
+# Initial Analysis of FEMA Declarations
+
+## All FEMA Declarations by State
+
 ```{r FEMA_Decs_by_State, echo=FALSE}
 all_FEMA_decs <- FEMA_Declarations %>% 
+  # group declarations by state and date
   group_by(state, declaration_day) %>% 
   count() %>% 
   ungroup()
 ```
 
 `alltime_FEMA_byState` contains the number of FEMA declarations for every US 
-state and territory since 1963.
+state and territory since 1953.
 
 ```{r all_FEMA_Declarations_by_State, echo=FALSE}
 alltime_FEMA_byState <- all_FEMA_decs %>%
   group_by(state) %>% 
   count() %>% 
   arrange(desc(n))
-
+# data frame w/ 59 states/territories, n count(FEMA declarations)
 alltime_FEMA_byState
 ```
-Since the database was created in 1963, the following 10 states have had the 
+
+Since the database was created in 1953, the following 10 states have had the 
 most FEMA natural disaster emergency declarations called (as of `r Sys.Date()`):
 
 CA, TX, OK, WA, FL, OR, NY, AZ, LA, NM
 
----
+## Recent FEMA Declarations by State
+
+The date this file was last compiled: 
+Current date (`Sys.Date`) is  `r Sys.Date()`.
+
+The date 5 years before, which is the starting time bound for subsequent Google 
+Trends queries shown below: 
+Variable `date_5y` is `r date_5y`.
 
 `recent_FEMA_byState` contains the number of FEMA declarations for every US 
 state and territory from the last 5 years.
@@ -140,12 +166,22 @@ recent_FEMA_byState <- all_FEMA_decs %>%
 
 recent_FEMA_byState
 ```
+
 From `r date_5y` to `r Sys.Date()`, the following 10 states have had the 
 most FEMA natural disaster emergency declarations called:
 
 CA, WA, OR, OK, FL, TX, NV, AZ, LA, MS
 
----
+In the past 5 years, California has recorded 75 FEMA declarations, outpacing all 
+other states. Much of these can be attributed to the recent spell of wildfires 
+which cause massive amounts of damage to property and endanger millions of 
+Americans each year.
+
+Florida has issued 23 FEMA declarations in the last 5 years, many of which are 
+the result of tropical storms from the Atlantic that grow into hurricanes. 
+These also cause billions of dollars in damage, widespread power outages, 
+endanger the lives of local residents and also threaten to submerge the already 
+eroding eastern coastline of Florida.
 
 ```{r small_FEMA_df, echo=FALSE}
 
@@ -168,11 +204,21 @@ small_FEMA <- FEMA_Declarations %>%
          incident_begin_day, 
          incident_end_day
          )
+# add filter() below to specify only statewide FEMA declarations
 #%>% filter(designated_area == "Statewide")
-#small_FEMA
+#uncomment to view small_FEMA table
+#view(small_FEMA)
 ```
 
-### Data set for climate change Google searches by day:
+---
+
+# Key Google Trends Summary Insights:
+
+## Climate Change Google Searches by State:
+
+A data frame arranged in descending order of all 50 states and Washington D.C.,
+showing the relative hits count for the search term "climate change" over the 
+last 5 years.
 
 ```{r climate_change_interest_by_state, echo=FALSE}
 search_terms <- c(
@@ -180,8 +226,7 @@ search_terms <- c(
 )
 
 climate_trends <- gtrends(keyword = search_terms,
-        geo = "US", #change to FL
-        time = "today 12-m")
+        geo = "US") # default time is past 5 years
 
 location_df <- data.frame(climate_trends[["interest_by_region"]][["location"]])
 hits_df <- data.frame(climate_trends[["interest_by_region"]][["hits"]])
@@ -198,8 +243,259 @@ names(climate_location_hits_table)[2] <- "hits"
 
 climate_location_hits_table
 ```
-*2) Does interest in climate change increase regionally after the occurrence of 
-a natural disaster?*
+
+Vermont set the mark for most Google search hits - relative search volume for 
+"climate change" over the past five years. Washington D.C. had 0.85 as much 
+search volume for the same term. The top ten regions were:
+
+VT, DC, ME, AK, OR, MA, NH, RI, HI, CO
+
+## Climate Change Keywords
+
+Visualizations, such as the faceted line plots below help illustrate important 
+trends in sentiment towards climate change and associated topics. For example, 
+interest in climate change, global warming, and the green new deal topics all 
+spiked during the 2020 election season, as climate change became an important 
+topic in the Presidential race.
+
+```{r US_climate_change-top4-query, echo=FALSE, results="Hide"}
+#remove results="hide" to view glimpse() of interest_over_time
+
+climate_search_terms <- c(
+"climate change",		
+"global warming",		
+"fossil fuel",		
+"green new deal"
+)
+
+climate_change_gtrends <- gtrends(keyword = climate_search_terms,
+        geo = "US",
+        time = "today 12-m") 
+
+climate_change_gtrends[1]$interest_over_time
+
+US_climate_interest <- climate_change_gtrends %>% 
+          .$interest_over_time %>%
+          glimpse()
+```
+
+```{r US_climate_change-viz, echo=FALSE}
+
+ climate_change_facet_plot <- US_climate_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "darkblue", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+
+climate_change_facet_plot
+```
+[Technical Resource Cited](https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/)
+
+Sentiment towards climate change can be difficult to track as individuals' 
+search queries may contain different keywords. The faceted plot above also shows
+that volume for "climate change" searches greatly exceeds the "hits" value of 
+synonymous terms, like "global warming" and also tangentially related topics, 
+like "fossil fuel" and "green new deal". It is evident that out of the four 
+terms plotted above, "climate change" is the most viable as an indicator of the 
+general public's sentiment towards climate change. This is likely a result of it 
+being the most used term in news outlets and research when referring to global 
+changes in weather and the environment.
+
+---
+
+# Research Question 1
+
+**Do Google search patterns correlate with real-world events?**
+
+Causality between what happens in the real-world and Google search trends is a 
+prerequisite for subsequent analysis. While it may seem intuitive, it is worth 
+explaining the mechanisms by which society and events express themselves in the 
+information age. A new adaptation of the proverbial question "does a tree really 
+fall in the woods if no one is around to hear it?" may be "do current events 
+really occur without being searched for on the internet?". According to existing 
+social science research - the short answer is no.
+
+The use of Google's search engine is so ingrained in the United States and 
+global cultures, that it is the internet which aggregates and disseminates 
+the vast majority of information humans use to interpret the world around them.
+
+```{r FL_hurricane-top4-query, echo=FALSE}
+
+search_terms <- c(
+"Hurricane Michael",		
+"Hurricane Dorian",		
+"Hurricane Isaias",		
+"Hurricane Sally"
+)
+
+output_results <- gtrends(keyword = search_terms,
+        geo = "US-FL",
+        time = "today 12-m") 
+
+output_results[1]$interest_over_time
+
+FL_hurr_interest <- output_results %>% 
+          .$interest_over_time %>% #not working
+          glimpse()
+```
+
+Another interesting property of Google Trends data is that in addition to 
+tracking human sentiment towards longstanding topics, like climate change, it 
+can also be used to detect one-time events, such as Hurricane Isaias and 
+Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and 
+Southeastern United States in 2020. They were classified as Category 1 and 
+Category 2 storms respectively, leaving more than $10.0 billion USD of damage in
+their wakes.
+
+Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
+more than ripples (hits ≤ 5) for the entirety of this past year. Interestingly 
+though, search hits for these terms also increased during the 2020 hurricane 
+season - around the time Google searches for active hurricanes spiked. It is 
+reasonable to assume that people do become more interested in past natural 
+disasters in order to contextualize the events that they are currently 
+experiencing.
+
+```{r FL_hurricane-top4-viz, echo=FALSE}
+ FL_hurr_plot <- FL_hurr_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "darkblue", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+FL_hurr_plot
+```
+
+
+```{r CA_fire-top4-query, echo=FALSE}
+CA_top4_fires <- c(
+"bobcat fire",		
+"august fire",		
+"creek fire",		
+"bear fire"
+)
+
+CA_top_fire_trends <- gtrends(keyword = CA_top4_fires,
+        geo = "US",
+        time = "today 12-m") #%>% summary()
+
+
+CA_fire_interest <- CA_top_fire_trends %>% 
+          .$interest_over_time %>% 
+          glimpse()
+
+#CA_fire_interest[1]$interest_over_time
+```
+
+```{r CA_fire-top4-viz, echo=FALSE}
+ CA_fire_facet_plot <- CA_fire_interest %>% 
+  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
+  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
+  # Begin ggplot
+  ggplot(aes(x = date, y = hits)) +
+  geom_line(colour = "dark red", size = 1.5) +
+  facet_wrap(~keyword) +
+  ggthemes::theme_economist()
+CA_fire_facet_plot
+```
+
+
+```{r Generalizable_Plotting_Function, echo=FALSE}
+##
+plot.gtrends.silent <- function(x, ...) {
+  df <- x$interest_over_time
+  df$date <- as.Date(df$date)
+  df$hits <- if(typeof(df$hits) == 'character'){
+    as.numeric(gsub('<','',df$hits))
+    } else {
+    df$hits
+    }
+ 
+  df$legend <- paste(df$keyword, " (", df$geo, ")", sep = "")
+ 
+  p <- ggplot(df, aes_string(x = "date", y = "hits", color = "legend")) +
+    geom_line() +
+    xlab("Date") +
+    ylab("Search Hits") +
+    ggtitle("Interest over time") +
+    theme_bw() +
+    theme(legend.title = element_blank())
+ 
+  invisible(p)
+}
+```
+
+Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
+
+```{r single_hit_yaxis_interest_plot, echo=FALSE}
+
+fire_and_climate_change_search_terms <- c(
+  "fire",
+  "climate change",
+  "insurance"
+)
+
+CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
+ 
+CA_fire_plot +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme(legend.position = "bottom")
+```
+
+Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
+
+```{r relative_yaxis_hit_plot, echo=FALSE}
+
+indiv_fire_trend <- gtrends(keyword = "fire",
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+indiv_cc_trend <- gtrends(keyword = "climate change",
+        geo = "CA") #time = "today+5-y" Last five years (default)
+
+date <- data.frame(indiv_fire_trend[["interest_over_time"]][["date"]])
+fire_hits <- data.frame(indiv_fire_trend[["interest_over_time"]][["hits"]])
+cc_hits <- data.frame(indiv_cc_trend[["interest_over_time"]][["hits"]])
+
+temp_fire_df <- cbind(date, fire_hits)
+temp_cc_df <- cbind(date, cc_hits)
+
+names(temp_fire_df)[1] <- "date"
+names(temp_fire_df)[2] <- "fire_hits"
+
+names(temp_cc_df)[1] <- "date"
+names(temp_cc_df)[2] <- "cc_hits"
+
+temp_joined <- inner_join(temp_fire_df, temp_cc_df, by = NULL) #def. by="date"
+view(temp_joined)
+
+graph_df <- temp_joined %>% 
+  pivot_longer(!date, names_to = "type", values_to = "hits")
+
+ggplot(data = graph_df) + 
+  aes(x = date, y = hits, color = type) + 
+  geom_line() + 
+  scale_colour_viridis_d(option  = "viridis") + 
+  labs(title = "Interest by Date", 
+       x = "Date", 
+       y = "Relative Interest") + 
+  #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme_minimal() + 
+  theme(legend.position = 'bottom')
+```
+
+---
+
+# Research Question 2
+
+**Does interest in climate change increase regionally after the occurrence of a **
+**natural disaster?**
 
 By virtue of research question 1, it is reasonable to assume a relationship 
 between natural disasters - physical events that shape critical aspects of the
@@ -497,155 +793,6 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
 ```
 
 
-# Research Questions
-
-*1) Do Google search patterns correlate with real-world events?*
-
-*2) Does interest in climate change increase regionally after the occurrence of 
-a natural disaster?*
-
-
-*3) Do people become more environmentally conscious, and modify their Google 
-search behavior after a natural disaster?*
-
-# Initial Analysis
-
-Visualizations, such as the faceted line plots below help illustrate important 
-trends in sentiment towards climate change and associated topics. For example, 
-interest in climate change, global warming, and the green new deal topics all 
-spiked during the 2020 election season, as climate change became an important 
-topic in the Presidential race.
-
-```{r US_climate_change-top4-query, echo=FALSE}
-climate_search_terms <- c(
-"climate change",		
-"global warming",		
-"fossil fuel",		
-"green new deal"
-)
-
-climate_change_gtrends <- gtrends(keyword = climate_search_terms,
-        geo = "US",
-        time = "today 12-m") 
-
-climate_change_gtrends[1]$interest_over_time
-
-US_climate_interest <- climate_change_gtrends %>% 
-          .$interest_over_time %>% #not working
-          glimpse()
-```
-
-
-```{r US_climate_change-viz, echo=FALSE}
-
- climate_change_facet_plot <- US_climate_interest %>% 
-  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
-  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
-  # Begin ggplot
-  ggplot(aes(x = date, y = hits)) +
-  geom_line(colour = "darkblue", size = 1.5) +
-  facet_wrap(~keyword) +
-  ggthemes::theme_economist()
-
-climate_change_facet_plot
-```
-[Technical Resource Cited](https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/)
-
-*1) Do Google search patterns correlate with real-world events?*
-
-Causality between what happens in the real-world and Google search trends is a 
-prerequisite for subsequent analysis. While it may seem intuitive, it is worth 
-explaining the mechanisms by which society and events express themselves in the 
-information age. A new adaptation of the proverbial question "does a tree really 
-fall in the woods if no one is around to hear it?" may be "do current events 
-really occur without being searched for on the internet?". According to existing 
-social science research - the short answer is no.
-
-The use of Google's search engine is so ingrained in the United States and 
-global cultures, that it is the internet which aggregates and disseminates 
-the vast majority of information humans use to interpret the world around them.
-
-```{r FL_hurricane-top4-query, echo=FALSE}
-
-search_terms <- c(
-"Hurricane Michael",		
-"Hurricane Dorian",		
-"Hurricane Isaias",		
-"Hurricane Sally"
-)
-
-output_results <- gtrends(keyword = search_terms,
-        geo = "US-FL",
-        time = "today 12-m") 
-
-output_results[1]$interest_over_time
-
-FL_hurr_interest <- output_results %>% 
-          .$interest_over_time %>% #not working
-          glimpse()
-```
-
-Another interesting property of Google Trends data is that in addition to 
-tracking human sentiment towards longstanding topics, like climate change, it 
-can also be used to detect one-time events, such as Hurricane Isaias and 
-Hurricane Sally, two of the most devastating storms to hit the Gulf Coast and 
-Southeastern United States in 2020. They were classified as Category 1 and 
-Category 2 storms respectively, leaving more than $10.0 billion USD of damage in
-their wakes.
-
-Conversely, Hurricane Dorian from 2019 and Hurricane Michael from 2018 showed no 
-more than ripples (hits ≤ 5) for the entirety of this past year. Interestingly 
-though, search hits for these terms also increased during the 2020 hurricane 
-season - around the time Google searches for active hurricanes spiked. It is 
-reasonable to assume that people do become more interested in past natural 
-disasters in order to contextualize the events that they are currently 
-experiencing.
-
-```{r FL_hurricane-top4-viz, echo=FALSE}
- FL_hurr_plot <- FL_hurr_interest %>% 
-  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
-  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
-  # Begin ggplot
-  ggplot(aes(x = date, y = hits)) +
-  geom_line(colour = "darkblue", size = 1.5) +
-  facet_wrap(~keyword) +
-  ggthemes::theme_economist()
-FL_hurr_plot
-```
-
-```{r CA_fire-top4-query, echo=FALSE}
-CA_top4_fires <- c(
-"bobcat fire",		
-"august fire",		
-"creek fire",		
-"bear fire"
-)
-
-CA_top_fire_trends <- gtrends(keyword = CA_top4_fires,
-        geo = "US",
-        time = "today 12-m") #%>% summary()
-
-
-CA_fire_interest <- CA_top_fire_trends %>% 
-          .$interest_over_time %>% 
-          glimpse()
-
-#CA_fire_interest[1]$interest_over_time
-```
-
-```{r CA_fire-top4-viz, echo=FALSE}
- CA_fire_facet_plot <- CA_fire_interest %>% 
-  mutate_at("hits", ~ifelse(. == "<1", 0.5, .)) %>% # replace with 0.5
-  mutate_at("hits", ~as.numeric(.)) %>% # convert to numeric
-  # Begin ggplot
-  ggplot(aes(x = date, y = hits)) +
-  geom_line(colour = "dark red", size = 1.5) +
-  facet_wrap(~keyword) +
-  ggthemes::theme_economist()
-CA_fire_facet_plot
-```
-
-
 ```{r Generalizable_Plotting_Function, echo=FALSE}
 ##
 plot.gtrends.silent <- function(x, ...) {
@@ -731,6 +878,15 @@ ggplot(data = graph_df) +
   theme_minimal() + 
   theme(legend.position = 'bottom')
 ```
+
+---
+
+# Research Question 3
+
+**Do people become more environmentally conscious, and modify their Google **
+**search behavior after a natural disaster?**
+
+---
 
 # Bibliography
 
