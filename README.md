@@ -18,7 +18,7 @@ Navigating climate tragedies in the near-term future is a likely reality
 
 * `us_disaster_declarations.csv`: the full dataset with all rows and columns. The geographical resolution is the county level, with [FIPS codes](https://en.wikipedia.org/wiki/FIPS_county_code) being used to encode the counties. In addition to the fips and timing features, the data provides the type of disaster and also binary flags that indicate whether specific aid programs were triggered in response.
 - `us_disasters_m5.csv`: the M5-specific subset. Constrained to the 3 states CA, TX, and WI; as well as to the time range of Jan 2011 - June 2016. Original creator also removed a few columns that they considered unnecessary for more tailored analysis.
-- `small_FEMA_df`: Constrained data frame I made to analyze FEMA declarations from the most recent 5 years (tabulated when knit), in the top n states and territories that recorded the most natural disasters (FEMA declarations) during that time period.
+- `small_FEMA`: Constrained data frame I made to analyze FEMA declarations from the most recent 5 years (tabulated when knit), in the top n states and territories that recorded the most natural disasters (FEMA declarations) during that time period.
 Can be modified to only view statewide emergencies, as opposed to also including regional and small-scale emergencies.
 
 ### Column Description
