@@ -111,8 +111,8 @@ FEMA_Declarations <- FEMA_Declarations %>%
 **(2)** Does interest in climate change increase regionally after the occurrence
 of a natural disaster?
 
-**(3)** Do people become more environmentally conscious, and modify their Google 
-search behavior after a natural disaster?*
+**(3)** Do people modify their Google search behavior and become more 
+environmentally conscious after a natural disaster?*
 
 ---
 
@@ -369,6 +369,7 @@ experiencing.
   ggthemes::theme_economist()
 FL_hurr_plot
 ```
+
 
 
 ```{r CA_fire-top4-query, echo=FALSE}
@@ -792,34 +793,6 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
   theme_bw()
 ```
 
-
-```{r Generalizable_Plotting_Function, echo=FALSE}
-##
-plot.gtrends.silent <- function(x, ...) {
-  df <- x$interest_over_time
-  df$date <- as.Date(df$date)
-  df$hits <- if(typeof(df$hits) == 'character'){
-    as.numeric(gsub('<','',df$hits))
-    } else {
-    df$hits
-    }
- 
-  df$legend <- paste(df$keyword, " (", df$geo, ")", sep = "")
- 
-  p <- ggplot(df, aes_string(x = "date", y = "hits", color = "legend")) +
-    geom_line() +
-    xlab("Date") +
-    ylab("Search Hits") +
-    ggtitle("Interest over time") +
-    theme_bw() +
-    theme(legend.title = element_blank())
- 
-  invisible(p)
-}
-```
-
-Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
-
 ```{r single_hit_yaxis_interest_plot, echo=FALSE}
 
 fire_and_climate_change_search_terms <- c(
@@ -883,8 +856,9 @@ ggplot(data = graph_df) +
 
 # Research Question 3
 
-**Do people become more environmentally conscious, and modify their Google **
-**search behavior after a natural disaster?**
+**Do people modify their Google search behavior and become more **
+**environmentally conscious after a natural disaster?**
+
 
 ---
 
