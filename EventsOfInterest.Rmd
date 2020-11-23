@@ -25,8 +25,15 @@ Google Trends data is accessible in R through the gTrendsR package, which was
 created by [Philippe Masicotte](https://github.com/PMassicotte) and made 
 available through [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/).
 
-Google trends data for specified search queries is represented by a `hits` variable, which expresses the relative volume of Google searches for specific 
+Google trends data for specified search queries is represented by a `hits` 
+variable, which expresses the relative volume of Google searches for specific 
 terms over geographical and time parameters.
+
+`hits` - a numeric integer between 0 and 100 representing search volume as a 
+proportion of the maximum search volume for the specified keyword within the 
+given time and location bounds. 
+It is worth noting that every Google trends query will *always* have at least 
+one interest_over_time `hits` value of 100 for a given query. 
 
 ```{r load_packages, message = FALSE}
 #---PACKAGES------  > remove "#" if package not previously installed
@@ -191,6 +198,23 @@ names(climate_location_hits_table)[2] <- "hits"
 
 climate_location_hits_table
 ```
+*2) Does interest in climate change increase regionally after the occurrence of 
+a natural disaster?*
+
+By virtue of research question 1, it is reasonable to assume a relationship 
+between natural disasters - physical events that shape critical aspects of the
+human experience - and Google search trends for these events. When FEMA declares 
+an emergency, for a hurricane, wildfire, flood, tornado or other event, people 
+who reside in the affected region want to know what is going on. This includes 
+searching the internet for more information about the nature of the emergency, 
+advice regarding how to protect their families and property, what to expect, and 
+how to prepare. The Google trends hits value associated with the disastr's name 
+thus fluctuates dramatically in the days leading up to, during, and after a 
+natural disaster impacts a community.
+
+The next logical question to pose - at least from the perspective of this 
+analysis - is whether or not humans have a tendency to search for topics like 
+climate change 
 
 ## Florida Hurricanes since `r date_5y`
 
@@ -477,40 +501,9 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
 
 *1) Do Google search patterns correlate with real-world events?*
 
-Causality between what happens in the real-world and Google search trends is a 
-prerequisite for subsequent analysis. While it may seem intuitive, it is worth 
-explaining the mechanisms by which society and events express themselves in the 
-information age. A new adaptation of the proverbial question "Does a tree really 
-fall in the woods if no one is around to hear it?" may be "Do current events 
-ever occur without being search for on the internet?". According to existing 
-social science research - the short answer is no.
-
-The use of Google's search engine is so ingrained in the United States and 
-global cultures, that it is the internet which aggregates and disseminates 
-the vast majority of information humans use to interpret the world around them.
-
-
 *2) Does interest in climate change increase regionally after the occurrence of 
 a natural disaster?*
 
-By virtue of research question 1, it is reasonable to assume a relationship 
-between natural disasters - physical events that shape critical aspects of the
-human experience - and Google search trends for these events. When FEMA declares 
-an emergency, for a hurricane, wildfire, flood, tornado or other event, people 
-who reside in the affected region want to know what is going on. This includes 
-searching the internet for more information about the nature of the emergency, 
-advice regarding how to protect their families and property, what to expect, and 
-how to prepare. The Google trends hits value associated with the disastr's name 
-thus fluctuates dramatically in the days leading up to, during, and after a 
-natural disaster impacts a community.
-
-hits - a numeric integer between 0 and 100 representing search volume as a 
-proportion of the maximum search volume for the specified keyword within the 
-given time and location bounds. It is worth noting that every Google trends ` will *always*
-
-The next logical question to pose - at least from the perspective of this 
-analysis - is whether or not humans have a tendency to search for topics like 
-climate change 
 
 *3) Do people become more environmentally conscious, and modify their Google 
 search behavior after a natural disaster?*
@@ -557,6 +550,20 @@ US_climate_interest <- climate_change_gtrends %>%
 climate_change_facet_plot
 ```
 [Technical Resource Cited](https://martinctc.github.io/blog/vignette-google-trends-with-gtrendsr/)
+
+*1) Do Google search patterns correlate with real-world events?*
+
+Causality between what happens in the real-world and Google search trends is a 
+prerequisite for subsequent analysis. While it may seem intuitive, it is worth 
+explaining the mechanisms by which society and events express themselves in the 
+information age. A new adaptation of the proverbial question "does a tree really 
+fall in the woods if no one is around to hear it?" may be "do current events 
+really occur without being searched for on the internet?". According to existing 
+social science research - the short answer is no.
+
+The use of Google's search engine is so ingrained in the United States and 
+global cultures, that it is the internet which aggregates and disseminates 
+the vast majority of information humans use to interpret the world around them.
 
 ```{r FL_hurricane-top4-query, echo=FALSE}
 
