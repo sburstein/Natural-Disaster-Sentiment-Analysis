@@ -35,7 +35,7 @@ within the given time and location bounds.
 It is worth noting that every Google trends query will *always* have at least 
 one interest_over_time `hits` value of 100 for a given query. 
 
-```{r load_packages, message = FALSE}
+```{r load_packages, message = FALSE, echo = FALSE}
 #---PACKAGES------  > remove "#" if package not previously installed
 #install.packages("tidyverse")
 library(tidyverse)
@@ -61,7 +61,7 @@ description and licensing information.
 `FEMA_Declarations` data set is used for the bulk of this analysis and is also 
 integrated with Google Trends data.
 
-```{r load_data, message = FALSE}
+```{r load_data, message = FALSE, echo = FALSE}
 #---DATA--------- > remove "#" to view raw data
 FEMA_Declarations <- read_csv("FEMA_data/us_disaster_declarations.csv")
 #view(FEMA_Declarations)
@@ -738,6 +738,37 @@ Analytic Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrends
 
 # Combining FEMA data with Google Trends Hits Queries
 
+By looking at the Google Trends change in search volume for climate change 
+immediately after a natural disaster takes place, it is plausible to make 
+conclusions about the presence (or absence) of fluctuations in local interest 
+for climate change as a result of the natural disaster.
+
+---
+### Null Hypothesis:
+
+$H_o: \mu_c = 0$
+
+The change in climate change hits immediately after a natural disaster will not 
+change. Thus, the day-to-day rate of change for climate change "hits" will be 0.
+
+If there is no change in sentiment, then a slope of 0 would be expected for the 
+daily change in hits for climate change Google searches immediately after a 
+natural disaster takes place.
+
+### Alternative Hypothesis:
+
+$H_a: \mu_c \neq 0$
+
+The change in climate change hits immediately after a natural disaster will 
+change. Thus, the day-to-day rate of change for climate change "hits" will not 
+equal 0.
+
+If there is a change in sentiment, then a slope not equal to 0 (either positive
+or negative) would be expected for the daily change in hits for climate change 
+Google searches immediately after a natural disaster takes place.
+
+---
+
 ## Florida Hurricanes since `r date_5y`
 
 A list of all FEMA declarations for hurricanes in Florida occurring in the last 
@@ -751,6 +782,11 @@ FL_Hurricanes <- FEMA_Declarations %>%
 
 FL_Hurricanes
 ```
+
+##Climate Change Sentiment after Hurricanes in Florida
+
+shows the change in search volume for "climate change" during the 14 days after 
+each Florida hurricane in the `FEMA_Declarations` dataset.
 
 ```{r FL_Hurricanes-query, echo=FALSE}
 
@@ -852,7 +888,7 @@ FLHurr_output_df
 ```
 
 
-```{r FLHurr_CCInterest-plot, echo=FALSE}
+```{r FLHurr_CCInterest-plot, echo=FALSE, warning=FALSE, message=FALSE}
 ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
@@ -864,7 +900,35 @@ ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "right")
 ```
 
-```{r}
+This visual shows the Google trends hits volume as a function of days after 
+a natural disaster takes place, grouped by natural disaster. It is hard to 
+extrapolate from this, as there are 9 events represented on the same graph, 
+and the colors make it difficult to read.
+
+A more intuitive method is to create one linear model that *ignores* the 
+grouping by event, as the mean of all the slopes is an even more meaningful 
+indicator of patterns in human behavior across different natural disasters.
+
+```{r FLHurr_CCMono-plot, echo = FALSE, warning=FALSE, message=FALSE}
+ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "FL Hurricanes Affects on Climate Change Sentiment",
+       subtitle = "Google Trends after FEMA Declaration",
+       y = "Google Trends Hits Volume") +
+  scale_x_continuous("Number of Days after FEMA Declaration", labels = as.character(xticks), breaks = xticks) + 
+  theme_bw()
+```
+
+Here, one linear model is visible, representing the average daily change in 
+search volume for climate change in the two weeks following every Florida 
+hurricane from the past 5 years. The null hypothesis is that it equals 0, 
+because assuming there is no relationship between a natural disaster and climate
+change sentiment, there should be no change in daily search volume for climate 
+change after a hurricane occurs. It appears to be slightly negative, but more 
+analysis is necessary.
+
+```{r FLHurr_CC-significance, echo = FALSE}
 #State_Disaster <- FL_Hurricanes
 # add a grouping variable (or many!)
  FLHurr_slopes <- FLHurr_graph_df %>%
@@ -876,23 +940,35 @@ ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
     x = mean(rel_date),   # x coordinate for slope label
     y = mean(hits)     # y coordinate for slope label
   )
-FLHurr_slopes %>% 
-  select(event_name, event_date, slope, significance) %>% 
-  distinct()  %>%
-  filter(significance < .2)
+
+hurr_slopes_output <- FLHurr_slopes %>% 
+                  select(event_name, event_date, slope, significance) %>% 
+                  distinct()  %>%
+                  filter(significance > .2)
+hurr_slopes_output
+```
+Methodology from reprex package [Reference](https://stackoverflow.com/questions/51355303/extract-slope-of-multiple-trend-lines-from-geom-smooth)
+
+7 of the 9 hurricanes have linear models with significance levels greater than 
+0.2. These represent the slopes that are moderate in value, by filtering out 
+all the slopes that were far too extreme to be realistic.
+
+Next, it is possible to conduct a t-test to determine a p-value for the null 
+hypothesis that the change in climate change hits immediately after a hurricane 
+disaster will not change.
+
+```{r FLHurr_CC-ttest, echo = FALSE}
+t.test(hurr_slopes_output$slope,mu=0)
 ```
 
+The p-value = 0.6881, which is greater than the significance level of 0.05, 
+meaning that we fail to reject the null hypothesis that the change in climate 
+change hits immediately after a hurricane in Florida will not change. Thus, 
+there appears to be insufficient evidence to make a causal claim about the 
+relationship between hurricanes in Florida and local Google trends sentiment for
+climate change.
 
-```{r FLHurr_CCMono-plot}
-ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "FL Hurricanes Affects on Climate Change Sentiment",
-       subtitle = "Google Trends after FEMA Declaration",
-       y = "Google Trends Hits Volume") +
-  scale_x_continuous("Number of Days after FEMA Declaration", labels = as.character(xticks), breaks = xticks) + 
-  theme_bw()
-```
+---
 
 ## California Wildfires since `r date_5y`
 
@@ -983,7 +1059,7 @@ relative_date_mod <- x %>%
 CAFire_graph_df <- relative_date_mod
 ```
 
-```{r CAFire_CCInterest-plot, echo=FALSE}
+```{r CAFire_CCInterest-plot, echo=FALSE, warning=FALSE, message=FALSE}
 ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
   geom_point(show.legend = FALSE) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -994,7 +1070,10 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "none")
 ```
 
-```{r CAFire_CCMono-plot, echo=FALSE}
+This is not helpful as there are 75 independent fire events present, making it 
+extremely difficult to infer anything from the visualization.
+
+```{r CAFire_CCMono-plot, echo=FALSE, warning=FALSE, message=FALSE}
 xticks <- 0:num_days
 ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
   geom_point() +
@@ -1006,72 +1085,130 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
   theme_bw()
 ```
 
-```{r single_hit_yaxis_interest_plot, echo=FALSE}
+Here, one linear model is visible, representing the average daily change in 
+search volume for climate change in the two weeks following every California 
+fire from the past 5 years. The null hypothesis is that it equals 0, 
+because assuming there is no relationship between a natural disaster and climate
+change sentiment, there should be no change in daily search volume for climate 
+change after a natural disaster occurs. It appears to be slightly negative, but 
+more analysis is necessary.
 
-fire_and_climate_change_search_terms <- c(
-  "fire",
-  "climate change",
-  "insurance"
-)
+```{r CAFire_CC-significance, echo = FALSE}
+#State_Disaster <- CA_Fires
+# add a grouping variable (or many!)
+ CAFire_slopes <- CAFire_graph_df %>%
+  #mutate(group5 = rep(1:10, each = 5)) %>%
+  group_by(event_name) %>%
+  mutate(
+    slope = round(lm(hits ~ rel_date)$coefficients[2], 2),
+    significance = summary(lm(hits ~ rel_date))$coefficients[2, 4],
+    x = mean(rel_date),   # x coordinate for slope label
+    y = mean(hits)     # y coordinate for slope label
+  )
 
-CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
-        geo = "CA") #time = "today+5-y" Last five years (default)
-
-CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
- 
-CA_fire_plot +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme(legend.position = "bottom")
+fire_slopes_output <- CAFire_slopes %>% 
+                  select(event_name, event_date, slope, significance) %>% 
+                  distinct()  %>%
+                  filter(significance > .2)
+fire_slopes_output
 ```
 
-Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
+41 of the 75 fires have linear models with significance levels greater than 
+0.2. These represent the slopes that are moderate in value, by filtering out 
+all the slopes that were far too extreme to be realistic.
 
-```{r relative_yaxis_hit_plot, echo=FALSE}
+Next, it is possible to conduct a t-test to determine a p-value for the null 
+hypothesis that the change in climate change hits immediately after a fire 
+disaster will not change.
 
-indiv_fire_trend <- gtrends(keyword = "fire",
-        geo = "CA") #time = "today+5-y" Last five years (default)
-
-indiv_cc_trend <- gtrends(keyword = "climate change",
-        geo = "CA") #time = "today+5-y" Last five years (default)
-
-date <- data.frame(indiv_fire_trend[["interest_over_time"]][["date"]])
-fire_hits <- data.frame(indiv_fire_trend[["interest_over_time"]][["hits"]])
-cc_hits <- data.frame(indiv_cc_trend[["interest_over_time"]][["hits"]])
-
-temp_fire_df <- cbind(date, fire_hits)
-temp_cc_df <- cbind(date, cc_hits)
-
-names(temp_fire_df)[1] <- "date"
-names(temp_fire_df)[2] <- "fire_hits"
-
-names(temp_cc_df)[1] <- "date"
-names(temp_cc_df)[2] <- "cc_hits"
-
-temp_joined <- inner_join(temp_fire_df, temp_cc_df, by = NULL) #def. by="date"
-view(temp_joined)
-
-graph_df <- temp_joined %>% 
-  pivot_longer(!date, names_to = "type", values_to = "hits")
-
-ggplot(data = graph_df) + 
-  aes(x = date, y = hits, color = type) + 
-  geom_line() + 
-  scale_colour_viridis_d(option  = "viridis") + 
-  labs(title = "Interest by Date", 
-       x = "Date", 
-       y = "Relative Interest") + 
-  #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme_minimal() + 
-  theme(legend.position = 'bottom')
+```{r FLHurr_CC-ttest, echo = FALSE}
+t.test(fire_slopes_output$slope,mu=0)
 ```
+
+The p-value = 0.2888, which means we fail to reject the null hypothesis that the
+change in climate change hits immediately after a wildfire in California will 
+not change. Thus, there appears to be insufficient evidence to make a causal 
+claim about the relationship between wildfires in California and local Google 
+trends sentiment for climate change.
+
+Although we formally reject the null hypothesis since p-value is greater than 
+0.05, the p-value for the t-test on California wildfires was dramatically lower 
+than the p-value for Florida Hurricanes. Additionally, the degrees of freedom 
+was much higher, and more values were input into the test (40 rather than 6). 
+This is very promising as it may indicate that the narrative around California 
+wildfires is more focused on climate change as a root cause than the narrative 
+surrounding hurricanes in Florida.
 
 ---
 
-# Research Question 3
+# Research Question 3 - Looking Forward
 
-**Do people modify their Google search behavior and become more **
-**environmentally conscious after a natural disaster?**
+**Do people become more environmentally conscious after a natural disaster?**
 
+The final question, which pushes beyond the scope of this inquiry, is whether or
+not humans’ climate-actions change as a result of natural disasters. For 
+example, in the days and weeks after a natural disaster, are more individuals 
+likely to sign up for a climate petition? After a long and tumultuous wildfire 
+season, are California residents more likely to buy an electric vehicle and 
+reduce their own carbon footprint? Or are Florida residents more likely to 
+reduce their waste and protect their coastlines after hurricanes cause damage 
+to them? These are complex questions, but ultimately critical as we seek to 
+understand how human behavior changes after local natural disasters threaten 
+their ways of life.
+
+Further research and data analysis will be necessary before such claims can be 
+evaluated in a statistically meaningful way. Regardless, it is imperative that 
+society considers the ways in which these natural disasters shape one’s 
+existence. Even more so, assuring that the public understands the relationship 
+between human actions and climate change is absolutely critical to mitigating a 
+future climate catastrophe. Without public support and trust, the environmental 
+sciences as a discipline will never have the necessary support to push for 
+significant changes in the government, economic, and social sectors.
+
+---
+
+# Conclusion
+
+## Research Questions
+
+Based on this analysis, it is clear there is a relationship between real-world 
+events, like natural disasters, and Google search volume for said terms. When 
+FEMA declares an emergency in a given region, more individuals search for these 
+keywords in order to gather information.
+
+In regards to assessing if there is a direct relationship between natural 
+disasters and search volume for climate change, it is inconclusive whether or 
+not there is a causal relationship. While there tends to be a slight decrease in 
+search volume for climate change during the days after a natural disaster is 
+declared, it is challenging to assert that this rise in Google trends hits for 
+climate change is a result of the natural disaster itself. Rather, it could also 
+be the product of other factors, like power outages, leading to fewer 
+individuals accessing the internet, or also people instead searching for 
+emergency information and being preoccupied with other matters. In a broader 
+sense, perhaps the two weeks following a natural disaster are not even the best 
+time to learn about the mechanisms and effects of climate change. 
+
+This being said, it was clear that the decreasing pattern for climate change 
+hits over the 14 days following a wildfire in California was more significant, 
+visually from the linear models outputs and quantitatively from the p-tests.
+This could mean that the relationship between natural disasters and climate 
+change Google searches is stronger for California wildfires, where 
+climate change is more readily attributed to wildfires as a cause, and people 
+are more likely to search for said terms when a wildfire occurs. It could also 
+just mean that there are other confounding variables which impact an 
+individual's ability to use Google in the two weeks following a FEMA declaration 
+for a fire - such as the fire itself.
+
+## What Else?
+
+From a sociological perspective, it is also interesting to map the extent of 
+these complex relationships between real events and human sentiment. While 
+natural disasters and climate change were the focus of this analysis, other such
+connections could be examined as well using Google trends data, such as the 
+relationship between Google search patterns and investment behavior, political 
+affiliation, economic prosperity, race, religion, familial relationships, or 
+even allegiance to a particular sports team. Google Trends is an incredibly 
+powerful analytic engine that is underutilized in the social sciences.
 
 ---
 
@@ -1085,14 +1222,28 @@ Economic Record, 88: 2-9. https://doi.org/10.1111/j.1475-4932.2012.00809.x
 2. "What do Google searches tell us about our climate change fears?" 
 NewsRx Health & Science, 3 Aug. 2014, p. 177. Gale Academic OneFile, https://link.gale.com/apps/doc/A378494502/AONE?u=duke_perkins&sid=AONE&xid=7d6f5991. Accessed 16 Nov. 2020.
 
-3. 
+3. Pierre-louis, K., &amp; Schwartz, J. (2020, August 21). Why Does California 
+Have So Many Wildfires? Retrieved November 21, 2020, 
+from https://www.nytimes.com/article/why-does-california-have-wildfires.html
+
+4. Machemer, T. (2020, August 21). In California, More Acres Have Burned in the 
+2020 Fire Season Than in All of 2019. Retrieved November 22, 2020, from https://www.smithsonianmag.com/smart-news/california-more-acres-have-burned-2020-all-2019-180975629/
+
+5. Florida Hurricane List. (n.d.). Retrieved November 23, 2020, from https://www.nhc.noaa.gov/outreach/history/
+
+6. Kurt Cobb (2019, March 18). Deep adaptation, post-sustainability and the 
+possibility of societal collapse. Retrieved November 23, 2020, from https://www.resilience.org/stories/2019-03-17/deep-adaptation-post-sustainability-and-the-possibility-of-societal-collapse/
 
 ## Technical Sources for Programming & Visualizations
 
-1. https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+7. https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
-2. https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
+8. https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/
 
-3. http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
+9. http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html
 
-4. 
+10. https://stackoverflow.com/questions/51355303/extract-slope-of-multiple-trend-lines-from-geom-smooth
+
+11. https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row
+
+
