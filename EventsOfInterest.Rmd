@@ -486,8 +486,50 @@ becomes increasingly challenging to make claims like "local populations tend to/
 to not search for past natural disaster events in order to contextualize 
 impending events" as the data is more ambiguous.
 
-```{r Generalizable_Plotting_Function, echo=FALSE}
-##
+## Transition to Climate Change Sentiment Analysis
+
+Thus, it is also necessary to consider the impact (if any) which these events 
+have on the general sentiment towards climate change, one of the most important 
+factors which dictates intensity and frequency of these events. Many news 
+sources and social networks address climate change and human action as a 
+contributing factor to the destruction caused by such natural disasters. 
+
+---
+
+# Research Question 2
+
+**Does interest in climate change increase regionally after the occurrence of a **
+**natural disaster?**
+
+## Context
+
+By virtue of research question 1, it is reasonable to assume a relationship 
+between natural disasters - physical events that shape critical aspects of the
+human experience - and Google search trends for these events. When FEMA declares 
+an emergency, for a hurricane, wildfire, flood, tornado or other event, people 
+who reside in the affected region want to know what is going on. This includes 
+searching the internet for more information about the nature of the emergency, 
+advice regarding how to protect their families and property, what to expect, and 
+how to prepare. The Google trends hits value associated with the disaster's name 
+thus fluctuates dramatically in the days leading up to, during, and after a 
+natural disaster impacts a community.
+
+The next logical question to pose - at least from the perspective of this 
+analysis - is whether or not humans have a tendency to search for topics like 
+climate change after the occurrence of a local natural disaster. One of the most
+noticeable and consequential results of increased global warming is that extreme
+weather events, like storms, fires and floods, become more severe and can occur 
+more frequently. This is often used as a rallying-cry by climate activists. 
+Without timely action to minimize greenhouse gas emissions and protect our 
+natural resources, there will likely be irreversible damage to the planet. 
+
+Therefore, it is critical to assess whether individuals in regions affected by 
+natural disasters turn to Google in the days surrounding said event for 
+information regarding climate change. Does the occurrence of a natural disaster 
+ultimately lead to any change in internet behavior? 
+
+```{r plotting_function, echo=FALSE}
+# A generalizable plotting function to display interest over time for topic vec.
 plot.gtrends.silent <- function(x, ...) {
   df <- x$interest_over_time
   df$date <- as.Date(df$date)
@@ -511,9 +553,28 @@ plot.gtrends.silent <- function(x, ...) {
 }
 ```
 
-Methodology per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
+## Point of Qualification
 
-```{r single_hit_yaxis_interest_plot, echo=FALSE}
+When using the gTrendsR package to analyze interest over time for “climate 
+change” and “fire” keywords in California from the last five years, it is 
+evident that climate change as a search term always receives fewer hits than 
+fire. This could be the resulting confluence of many principles. First of all, 
+some terms are just more prevalent in the public conscious than others. Fire 
+often poses an immediate threat to the health and safety of individuals, whereas 
+climate change, while still a real threat to society, is less immediate and 
+obvious. Additionally, it is likely that “fire” as a keyword also tabulates 
+search volume for search queries unrelated to wildfires, such as “How to start a
+fire?”. Conversely, individuals may be quite curious for topics like climate 
+change and their connection to natural disasters, but use other terms in their 
+query, such as “what causes natural disasters?”. These are inherent flaws of the
+study that must be stated. They serve as a point of qualification for any broad 
+claims which this research seeks to make. Without the use of sophisticated 
+machine learning models or fine-tuning the Google trends functionality, these 
+are sources of error which must be accepted.
+
+## California Interest Over Time Graph
+
+```{r fire_cc_insurance_plot, echo=FALSE}
 
 fire_and_climate_change_search_terms <- c(
   "fire",
@@ -522,7 +583,7 @@ fire_and_climate_change_search_terms <- c(
 )
 
 CA_all_fire_trends <- gtrends(keyword = fire_and_climate_change_search_terms,
-        geo = "CA") #time = "today+5-y" Last five years (default)
+        geo = "US-CA") #time = "today+5-y" Last five years (default)
 
 CA_fire_plot <- plot.gtrends.silent(CA_all_fire_trends)
  
@@ -531,15 +592,65 @@ CA_fire_plot +
   theme(legend.position = "bottom")
 ```
 
-Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
+---
+Graphing Function per Dave Tang, [Visualising Google Trends Results with R](https://davetang.org/muse/2018/12/31/visualising-google-trends-results-with-r/)
+---
 
-```{r relative_yaxis_hit_plot, echo=FALSE}
+This interesting output shows the utility of Google trends’ output when 
+displayed in a readable format. Interest for “insurance” is also plotted, as 
+damage from wildfires often leads to an increase in insurance  claims. However 
+there does not seem to be a clear relationship on this graph between any of the 
+three terms “fire”, “insurance” or “climate change” in California over the past 
+five years.
+
+## Florida Interest Over Time Graph
+
+```{r hurr_cc_insurance_plot, echo=FALSE}
+
+hurr_and_climate_change_search_terms <- c(
+  "hurricane",
+  "climate change",
+  "insurance"
+)
+
+FL_all_hurr_trends <- gtrends(keyword = hurr_and_climate_change_search_terms,
+        geo = "US-FL") #time = "today+5-y" Last five years (default)
+
+FL_hurr_plot <- plot.gtrends.silent(FL_all_hurr_trends)
+ 
+FL_hurr_plot +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme(legend.position = "bottom")
+```
+
+The next visualization shows the Google trends interest over time for 
+“hurricane”, “insurance” and “climate change” plotted relative to one another. 
+This time, the relative volume of “climate change”  search queries *and* 
+“insurance” search queries is dwarfed by the number of searches for “hurricane". 
+There is again no clear relationship between any of these three keywords.
+
+## Individual Keyword Queries Transformation
+
+By transforming the data such that individual queries are processed for each of 
+the three search terms, rather than calling `gtrends()` once on a vector of 
+both "event type" and "climate change" keywords, it is possible to plot interest
+over time for each search term independently of the other By doing so, each 
+search term will be plotted on the same proportional y-axis, where hits 
+represent – by definition – the proportion of search queries relative to its 
+own maximum search volume within the given time and location parameters. This 
+produces a more interesting output where anomalies in either of the search 
+term’s hits volume can be detected with ease, rather than having climate change 
+search volume consistently at hits = <1. Insurance was dropped for simplicity.
+
+### California Interest Over Time Transformation Graph
+
+```{r fire_yaxis_transform, echo=FALSE}
 
 indiv_fire_trend <- gtrends(keyword = "fire",
-        geo = "CA") #time = "today+5-y" Last five years (default)
+        geo = "US-CA") #time = "today+5-y" Last five years (default)
 
 indiv_cc_trend <- gtrends(keyword = "climate change",
-        geo = "CA") #time = "today+5-y" Last five years (default)
+        geo = "US-CA") #time = "today+5-y" Last five years (default)
 
 date <- data.frame(indiv_fire_trend[["interest_over_time"]][["date"]])
 fire_hits <- data.frame(indiv_fire_trend[["interest_over_time"]][["hits"]])
@@ -555,7 +666,7 @@ names(temp_cc_df)[1] <- "date"
 names(temp_cc_df)[2] <- "cc_hits"
 
 temp_joined <- inner_join(temp_fire_df, temp_cc_df, by = NULL) #def. by="date"
-view(temp_joined)
+#view(temp_joined)
 
 graph_df <- temp_joined %>% 
   pivot_longer(!date, names_to = "type", values_to = "hits")
@@ -564,7 +675,8 @@ ggplot(data = graph_df) +
   aes(x = date, y = hits, color = type) + 
   geom_line() + 
   scale_colour_viridis_d(option  = "viridis") + 
-  labs(title = "Interest by Date", 
+  labs(title = "Relative Interest by Date",
+       subtitle = "For Climate Change and Fires in CA over the last 5 years",
        x = "Date", 
        y = "Relative Interest") + 
   #scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
@@ -572,32 +684,59 @@ ggplot(data = graph_df) +
   theme(legend.position = 'bottom')
 ```
 
+A transformed interest over time plot for wildfires and climate change in 
+California over the past 5 years.
+
+### Florida Interest Over Time Transformation Graph
+
+```{r hurr_yaxis_transform, echo=FALSE}
+
+indiv_hurr_trend <- gtrends(keyword = "hurricane",
+        geo = "US-FL") #time = "today+5-y" Last five years (default)
+
+indiv_cc_trend <- gtrends(keyword = "climate change",
+        geo = "US-FL") #time = "today+5-y" Last five years (default)
+
+date <- data.frame(indiv_hurr_trend[["interest_over_time"]][["date"]])
+#convert interest_over_time$hits to type integer -> error not in CA df above
+hurr_hits <- data.frame(as.integer(indiv_hurr_trend[["interest_over_time"]][["hits"]]))
+cc_hits <- data.frame(indiv_cc_trend[["interest_over_time"]][["hits"]])
+
+temp_hurr_df <- cbind(date, hurr_hits)
+temp_cc_df <- cbind(date, cc_hits)
+
+names(temp_hurr_df)[1] <- "date"
+names(temp_hurr_df)[2] <- "hurr_hits"
+
+names(temp_cc_df)[1] <- "date"
+names(temp_cc_df)[2] <- "cc_hits"
+
+temp_joined <- inner_join(temp_hurr_df, temp_cc_df, by = NULL) #def. by="date"
+#view(temp_joined)
+
+graph_df <- temp_joined %>% 
+  pivot_longer(!date, names_to = "type", values_to = "hits")
+
+ggplot(data = graph_df) + 
+  aes(x = date, y = hits, color = type) + 
+  geom_line() + 
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Relative Interest by Date",
+       subtitle = "For Climate Change and Hurricanes in FL over the last 5 years",
+       x = "Date", 
+       y = "Relative Interest") + 
+  theme_minimal() + 
+  theme(legend.position = 'bottom')
+```
+
+A transformed interest over time plot for hurricanes and climate change in 
+Florida over the past 5 years.
+
+---
+Analytic Methodology per Surbhi Tyagi, [Getting Google Trends Data Using gtrendsR](http://rstudio-pubs-static.s3.amazonaws.com/520533_f25fa191afa7476a995322a4393710ce.html)
 ---
 
-# Research Question 2
-
-**Does interest in climate change increase regionally after the occurrence of a **
-**natural disaster?**
-
-By virtue of research question 1, it is reasonable to assume a relationship 
-between natural disasters - physical events that shape critical aspects of the
-human experience - and Google search trends for these events. When FEMA declares 
-an emergency, for a hurricane, wildfire, flood, tornado or other event, people 
-who reside in the affected region want to know what is going on. This includes 
-searching the internet for more information about the nature of the emergency, 
-advice regarding how to protect their families and property, what to expect, and 
-how to prepare. The Google trends hits value associated with the disastr's name 
-thus fluctuates dramatically in the days leading up to, during, and after a 
-natural disaster impacts a community.
-
-The next logical question to pose - at least from the perspective of this 
-analysis - is whether or not humans have a tendency to search for topics like 
-climate change after the occurrence of a local natural disaster. One of the most
-noticeable and consequential results of increased global warming is that extreme
-weather events, like storms, fires and floods, become more severe and can occur 
-more frequently. This is often used as a rallying-cry by climate activists. 
-Without timely action to minimize greenhouse gas emissions and protect our 
-natural resources, there will likely be irreversible damage to the planet. 
+# Combining FEMA data with Google Trends Hits Queries
 
 ## Florida Hurricanes since `r date_5y`
 
@@ -613,7 +752,7 @@ FL_Hurricanes <- FEMA_Declarations %>%
 FL_Hurricanes
 ```
 
-```{r FL_Hurricanes-query}
+```{r FL_Hurricanes-query, echo=FALSE}
 
 # set parameters for FL_Hurricanes query below
 num_days <- 14
@@ -665,10 +804,10 @@ finaldata <- cbind(event_name=EventsVec, finaldata)
 # set finaldata pointer to FLHurr_Hits (specific variable)
 FLHurr_Hits <- finaldata
 # view data frame
-FLHurr_Hits
+#FLHurr_Hits
 ```
 
-```{r FL_Hurricanes-hits-df}
+```{r FL_Hurricanes-hits-df, echo=FALSE}
 
 # set df as FLHurr_Hits for subsequent df transformation
 df <- FLHurr_Hits
@@ -693,6 +832,7 @@ relative_date_mod <- x %>%
 FLHurr_graph_df <- relative_date_mod
 ```
 
+```{r unused-coalesce-fxn, eval=FALSE, echo=FALSE}
 # method to get 1 row for each event
 hits_df <- relative_date_mod %>% 
   pivot_wider(names_from = rel_date, values_from = hits)
@@ -709,8 +849,10 @@ FLHurr_output_df <- hits_df
 FLHurr_output_df
 
 `coalesce_by_column` function [description and source](https://stackoverflow.com/questions/45515218/combine-rows-in-data-frame-containing-na-to-make-complete-row)
+```
 
-```{r FLHurr_CCInterest-plot}
+
+```{r FLHurr_CCInterest-plot, echo=FALSE}
 ggplot(data = FLHurr_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
@@ -766,7 +908,7 @@ CA_Fires <- FEMA_Declarations %>%
 CA_Fires
 ```
 
-```{r CA_Fires-query}
+```{r CA_Fires-query, echo=FALSE}
 
 # set parameters for CA_Fires query below
 num_days <- 14
@@ -814,10 +956,10 @@ finaldata <- cbind(event_name=EventsVec, finaldata)
 # set finaldata pointer to CAFire_Hits (specific variable)
 CAFire_Hits <- finaldata
 # view data frame
-CAFire_Hits
+#CAFire_Hits
 ```
 
-```{r CA_Fires-hits-df}
+```{r CA_Fires-hits-df, echo=FALSE}
 
 # set df as CAFire_Hits for subsequent df transformation
 df <- CAFire_Hits
@@ -841,22 +983,7 @@ relative_date_mod <- x %>%
 CAFire_graph_df <- relative_date_mod
 ```
 
-
-##TAKEOUT
-hits_df <- relative_date_mod %>% 
-  pivot_wider(names_from = rel_date, values_from = hits)
-
-coalesce_by_column <- function(df) {
-  return(coalesce(df[1 : num_days]))
-}
-
-hits_df %>%
-  group_by(keyword) %>%
-  summarise_all(coalesce_by_column)
-  
-CAFire_output_df <- hits_df
-
-```{r CAFire_CCInterest-plot}
+```{r CAFire_CCInterest-plot, echo=FALSE}
 ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) +
   geom_point(show.legend = FALSE) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -867,7 +994,7 @@ ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits, color = event_name)) 
   theme(legend.position = "none")
 ```
 
-```{r CAFire_CCMono-plot}
+```{r CAFire_CCMono-plot, echo=FALSE}
 xticks <- 0:num_days
 ggplot(data = CAFire_graph_df, aes(x = rel_date, y = hits)) +
   geom_point() +
